@@ -1,10 +1,13 @@
+# test_serpapi.py
 from serpapi.google_search import GoogleSearch
 
 params = {
-    "engine": "google",
-    "q": "CEO Nvidia site:linkedin.com/in",
-    "api_key": "your_api_key_here"
+  "engine": "google",
+  "q": "Apple Inc. leadership team",
+  "api_key": "YOUR_SERPAPI_KEY",  # Replace this or set via .env
+  "num": 3
 }
 
 search = GoogleSearch(params)
-print(search.get_dict())
+results = search.get_dict()
+print(results)

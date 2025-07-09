@@ -1,36 +1,33 @@
-# backend/llm_client.py
+# llm_client.py
+
 import os
-import openai
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 
-# Switch base_url and model here only
-USE_OPENROUTER = True
+def get_llm_client() -> OpenAI:
+    """
+    Returns an OpenAI client instance configured for OpenAI or OpenRouter.
+    """
+    use_openrouter = os.getenv("USE_OPENROUTER", "false").lower() == "true"
+    if use_openrouter:
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        if not api_key:
+            raise RuntimeError("Missing OPENROUTER_API_KEY.")
+        return OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key
+        )
+    else:
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError("Missing OPENAI_API_KEY.")
+        return OpenAI(api_key=api_key)
 
-if USE_OPENROUTER:
-    openai.base_url = "https://openrouter.ai/api/v1"
-    openai.api_key = os.environ["OPENROUTER_API_KEY"]
-    DEFAULT_MODEL = "mistralai/mistral-small-3.2-24b-instruct:free"
-else:
-    openai.api_key = os.environ["OPENAI_API_KEY"]
-    DEFAULT_MODEL = "gpt-4o"
-
-client = openai.OpenAI()
-
-print("USE_OPENROUTER:", USE_OPENROUTER)
-
-def get_execs_via_llm(ticker: str, company_name: str) -> str:
-    system_prompt = "You are a helpful AI that extracts executive team members from a public company."
-    user_prompt = f"Who are the CEO, CFO, and Treasurer of {company_name} ({ticker})? Please include their full name and role."
-
-    response = client.chat.completions.create(
-        model=DEFAULT_MODEL,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-    )
-
-    content = response.choices[0].message.content
-    return content.strip() if content else ""
+def get_model_name() -> str:
+    """
+    Returns the model name to use for the LLM call.
+    Defaults to 'gpt-3.5-turbo' if not specified.
+    """
+    return os.getenv("MODEL_NAME", "gpt-3.5-turbo")
