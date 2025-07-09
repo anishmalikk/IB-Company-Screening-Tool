@@ -1,33 +1,26 @@
-from fastapi import FastAPI
+
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from exec_scraper import get_exec_info, search_linkedin
+from exec_scraper import get_execs_via_gpt
 
 app = FastAPI()
 
-class ScreenRequest(BaseModel):
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class ScreenInput(BaseModel):
     ticker: str
+    name: str
 
 @app.post("/screen")
-def screen_company(req: ScreenRequest):
-    execs = get_exec_info(req.ticker)
-
-    enriched_execs = {}
-    for title, name in execs.items():
-        if name != "Not Found":
-            profile = search_linkedin(name, req.ticker)
-            enriched_execs[title] = {
-                "name": name,
-                "linkedin": profile["linkedin"],
-                "email": profile["email"]
-            }
-        else:
-            enriched_execs[title] = {
-                "name": "Not Found",
-                "linkedin": "",
-                "email": ""
-            }
-
-    return {
-        "message": f"Screening {req.ticker}...",
-        "executives": enriched_execs
-    }
+def screen_company_screen_post(screen_input: ScreenInput):
+    ticker = screen_input.ticker
+    name = screen_input.name
+    result = get_execs_via_gpt(ticker=ticker, company_name=name)
+    return {"executives": result}

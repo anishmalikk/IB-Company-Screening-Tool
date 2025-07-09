@@ -1,93 +1,71 @@
+# backend/exec_scraper.py
+
 import os
-import requests
-from bs4 import BeautifulSoup
-from typing import Dict, Optional
-from serpapi import GoogleSearch
+from typing import List
 from dotenv import load_dotenv
 
+from openai import OpenAI
+from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
+
+# Load environment variables from .env file
 load_dotenv()
 
-SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
+# Set up OpenAI client for either official OpenAI or OpenRouter API
+USE_OPENROUTER = os.environ.get("USE_OPENROUTER", "False").lower() in ("1", "true", "yes")
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+if USE_OPENROUTER:
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=os.environ["OPENROUTER_API_KEY"]
+    )
+    MODEL = "morph/morph-v3-fast"  # Try this model
+else:
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    MODEL = "gpt-4o"
+
+SYSTEM_PROMPT: ChatCompletionSystemMessageParam = {
+    "role": "system",
+    "content": (
+        "You are a helpful assistant that extracts executive information for public companies. "
+        "When asked about a company's executives, provide the current CEO, CFO, and Treasurer. "
+        "If they don't have a Treasurer on their site, put 'same' under Treasurer. "
+        "Make sure you are looking at the latest news (for example if a new person was appointed recently) "
+        "and give the result in this exact format:\n"
+        "CEO: [Name]\n"
+        "CFO: [Name]\n"
+        "Treasurer (or closest): [Name or 'same']"
+    ),
 }
 
-def scrape_exec_names(url: str) -> Dict[str, str]:
+def get_execs_via_gpt(ticker: str, company_name: str) -> List[str]:
     try:
-        res = requests.get(url, headers=HEADERS, timeout=10)
-        soup = BeautifulSoup(res.text, "html.parser")
-        text = soup.get_text().lower()
+        query = (
+            f"I need to do a public screen on {company_name} ({ticker}). "
+            f"Tell me their current CEO, CFO, and Treasurer. "
+            f"If they don't have a treasurer on their site, just put 'same' under treasurer. "
+            f"Make sure you are looking at the latest news (for ex if a new person was appointed recently) "
+            f"and give me the result as:\n"
+            f"CEO: ...\n"
+            f"CFO: ...\n"
+            f"Treasurer (or closest): ..."
+        )
 
-        execs = {"CEO": "Not Found", "CFO": "Not Found", "Treasurer": "Not Found"}
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                SYSTEM_PROMPT,
+                {"role": "user", "content": query},
+            ],
+            temperature=0.2,
+        )
+        print("LLM raw response:", response)
+        text = response.choices[0].message.content
+        if not text:
+            print(f"No response content for {ticker}")
+            return []
 
-        for role in execs:
-            for tag in soup.find_all(["h1", "h2", "h3", "p", "div"]):
-                content = tag.get_text().strip()
-                if role.lower() in content.lower():
-                    words = content.split()
-                    name = " ".join([w for w in words if w.istitle() and len(w) > 2])
-                    if len(name.split()) >= 2:
-                        execs[role] = name
-                        break
-
-        return execs
-
+        lines = [line.strip("- ").strip() for line in text.split("\n") if line.strip()]
+        return lines
     except Exception as e:
-        print(f"Scraping error: {e}")
-        return {
-            "CEO": "Not Found",
-            "CFO": "Not Found",
-            "Treasurer": "Not Found"
-        }
-
-def get_exec_info(ticker: str) -> Dict[str, str]:
-    query = f"{ticker} executive leadership site:{ticker.lower()}.com"
-    params = {
-        "engine": "google",
-        "q": query,
-        "api_key": SERPAPI_API_KEY,
-        "num": 3
-    }
-
-    try:
-        search = GoogleSearch(params)
-        results = search.get_dict()
-        for result in results.get("organic_results", []):
-            link = result.get("link", "")
-            if ticker.lower() in link and any(k in link.lower() for k in ["leadership", "executives", "management", "team"]):
-                return scrape_exec_names(link)
-    except Exception as e:
-        print(f"Exec name search error: {e}")
-
-    return {
-        "CEO": "Not Found",
-        "CFO": "Not Found",
-        "Treasurer": "Not Found"
-    }
-
-def search_linkedin(name: str, company: str) -> Dict[str, str]:
-    query = f"{name} {company} site:linkedin.com/in"
-    params = {
-        "engine": "google",
-        "q": query,
-        "api_key": SERPAPI_API_KEY,
-        "num": 5
-    }
-
-    try:
-        search = GoogleSearch(params)
-        results = search.get_dict()
-
-        for result in results.get("organic_results", []):
-            link = result.get("link", "")
-            if "linkedin.com/in/" in link:
-                return {
-                    "linkedin": link,
-                    "email": f"{name.lower().replace(' ', '.')}@{company.lower()}corp.com"
-                }
-
-        return {"linkedin": "", "email": ""}
-    except Exception as e:
-        print(f"SerpAPI error: {e}")
-        return {"linkedin": "", "email": ""}
+        print(f"Error getting executives for {ticker}: {e}")
+        return []
