@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 from openai import OpenAI
 from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
+from serpapi import GoogleSearch
 
 # Load environment variables from .env file
 load_dotenv()
@@ -18,7 +19,7 @@ if USE_OPENROUTER:
         base_url="https://openrouter.ai/api/v1",
         api_key=os.environ["OPENROUTER_API_KEY"]
     )
-    MODEL = "morph/morph-v3-fast"  # Try this model
+    MODEL = os.getenv("MODEL_NAME", "openrouter/quasar-alpha")
 else:
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
     MODEL = "gpt-4o"
@@ -69,3 +70,73 @@ def get_execs_via_gpt(ticker: str, company_name: str) -> List[str]:
     except Exception as e:
         print(f"Error getting executives for {ticker}: {e}")
         return []
+
+import requests
+
+def get_executives_from_api(ticker):
+    # Example using a finance API or scraping Yahoo Finance
+    # Or use SerpAPI to search "CEO of {company}"
+    # Fallback to LLM if not found
+    pass
+
+def get_executives_via_llm(company, ticker):
+    prompt = f"""I need to do a public screen on {company} ({ticker}). Tell me their current CEO, CFO, and Treasurer. If they don't have a treasurer on their site, just put "same" under treasurer. I want just the information I’m asking for in this format, no extra words or info. Make sure you are looking at the latest news (for ex if a new person was appointed recently) and give me the result as:
+CFO: ...
+Treasurer (or closest): ...
+CEO: ..."""
+    # Call your LLM here
+    pass
+
+# Combine both for best results
+
+load_dotenv()
+
+SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+def get_executives_from_serpapi(company):
+    query = f"{company} executive team"
+    params = {
+        "engine": "google",
+        "q": query,
+        "api_key": SERPAPI_API_KEY
+    }
+    search = GoogleSearch(params)
+    results = search.get_dict()
+    # Try to extract names from the organic results/snippets
+    execs = []
+    for result in results.get("organic_results", []):
+        snippet = result.get("snippet", "")
+        # Simple heuristic: look for CEO, CFO, Treasurer in snippet
+        for role in ["CEO", "CFO", "Treasurer"]:
+            if role in snippet:
+                execs.append(snippet)
+    return execs
+
+def format_executives_with_llm(company, ticker, exec_snippets):
+    prompt = (
+        f"Given the following information about {company} ({ticker}):\n"
+        + "\n".join(exec_snippets) +
+        "\nExtract the current CEO, CFO, and Treasurer. "
+        "If Treasurer is not found, put 'same' under Treasurer. "
+        "Format the answer as:\n"
+        "CFO: ...\nTreasurer (or closest): ...\nCEO: ..."
+    )
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    response = client.chat.completions.create(
+        model="gpt-4o",  # or your preferred model
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2,
+    )
+    content = response.choices[0].message.content
+    return content.strip() if content else ""
+
+def get_executives(company, ticker):
+    exec_snippets = get_executives_from_serpapi(company)
+    if not exec_snippets:
+        return "No executive info found in search results."
+    return format_executives_with_llm(company, ticker, exec_snippets)
+
+# Example usage:
+if __name__ == "__main__":
+    print(get_executives("Amazon", "AMZN"))
