@@ -114,7 +114,7 @@ Use the snippets below:
 [Treasurer Search Snippets]
 {treasurer_snippets}
 """
-
+    print(prompt)
     client = get_llm_client()
     response = client.chat.completions.create(
         model=MODEL_NAME,
