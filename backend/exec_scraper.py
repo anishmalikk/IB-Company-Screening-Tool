@@ -6,6 +6,8 @@ from serpapi.google_search import GoogleSearch
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+import asyncio
+from playwright.async_api import async_playwright
 
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
@@ -79,20 +81,35 @@ def fetch_leadership_page_url(company_name: str) -> str:
     return ""
 
 
-def get_page_text(url: str) -> str:
+async def get_leadership_page_text(url: str) -> str:
+    """Scrape and extract plain text from leadership page using Playwright, fallback to requests."""
     try:
-        resp = requests.get(url, timeout=10)
-        soup = BeautifulSoup(resp.text, "html.parser")
-        # Remove scripts and styles
-        for tag in soup(["script", "style"]):
-            tag.decompose()
-        text = soup.get_text(separator="\n")
-        # Clean up whitespace
-        lines = [line.strip() for line in text.splitlines() if line.strip()]
-        return "\n".join(lines)
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page()
+            await page.set_extra_http_headers({"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"})
+            await page.goto(url, wait_until="networkidle", timeout=30000)
+            await page.wait_for_timeout(3000)  # Wait for JS
+            html_content = await page.content()
+            await browser.close()
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(html_content, "html.parser")
+            text = soup.get_text(separator="\n", strip=True)
+            return text
     except Exception as e:
-        print(f"Error fetching page: {e}")
-        return ""
+        print(f"Playwright scraping error: {e}")
+        # Fallback to requests
+        try:
+            import requests
+            from bs4 import BeautifulSoup
+            headers = {"User-Agent": "Mozilla/5.0"}
+            resp = requests.get(url, headers=headers, timeout=10)
+            soup = BeautifulSoup(resp.text, "html.parser")
+            text = soup.get_text(separator="\n", strip=True)
+            return text
+        except Exception as e2:
+            print(f"Requests fallback error: {e2}")
+            return ""
 
 
 def format_exec_info(snippets_ceo_cfo: str, leadership_snippets: str, treasurer_snippets: str, company_name: str) -> str:
@@ -108,7 +125,7 @@ Use the snippets below:
 [CEO and CFO snippets]
 {snippets_ceo_cfo}
 ---
-[Leadership Page Snippets]
+[Leadership Page Full Page Text]
 {leadership_snippets}
 ---
 [Treasurer Search Snippets]
@@ -124,9 +141,13 @@ Use the snippets below:
     return content.strip() if content else ""
 
 
-def get_execs_via_serp(company_name: str) -> str:
+def get_execs_via_serp_sync(company_name: str) -> str:
+    """Sync wrapper for backward compatibility if needed."""
+    return asyncio.run(get_execs_via_serp(company_name))
+
+async def get_execs_via_serp(company_name: str) -> str:
     ceo_cfo_text = fetch_serp_results(company_name, "CEO CFO")
     leadership_url = fetch_leadership_page_url(company_name)
-    leadership_text = get_page_text(leadership_url) if leadership_url else ""
+    leadership_text = await get_leadership_page_text(leadership_url) if leadership_url else ""
     treasurer_text = fetch_treasurer_search_snippets(company_name)
     return format_exec_info(ceo_cfo_text, leadership_text, treasurer_text, company_name)
