@@ -12,7 +12,7 @@ async def company_info(company_name: str, ticker: str):
     #execs = await get_execs_via_serp(company_name)
     #industry_blurb = get_industry_and_blurb(company_name)
     tenq_link = get_latest_10q_link_for_ticker(ticker)
-    debt_liquidity_summary = get_laymanized_debt_liquidity(tenq_link, openai_client) if tenq_link else ""
+    debt_liquidity_summary = get_laymanized_debt_liquidity(tenq_link) if tenq_link else ""
     return {
         #"executives": execs,
         #"industry_blurb": industry_blurb,
