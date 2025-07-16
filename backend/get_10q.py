@@ -65,28 +65,28 @@ def get_laymanized_debt_liquidity(tenq_url: str, debug=False):
             'facility name @ (interest rate) mat. mm/yyyy (Lead Bank)\n'
             '\n'
             'Instructions:\n'
-            '- Use the **official facility name** as written in the 10-Q, not a generic or invented name.\n'
+            '- Use the **official, full facility name** as written in the 10-Q, not a generic or invented name.\n'
             '- Always use the **maximum committed amount** or availability (not the current outstanding/borrowed amount).\n'
             '- If the facility name is long, abbreviate only if the abbreviation is used in the 10-Q.\n'
-            '- If the 10-Q provides a table, use the names and amounts from the table, not from narrative summaries.\n'
+            '- If the 10-Q provides a table, use the names and amounts from the table, not from narrative summaries (if they are complete facility amounts, not usage or debt owed).\n'
             '- If both committed and outstanding amounts are present, always prefer the committed/maximum size.\n'
-            '- If the facility is a revolver, use the word "Revolver" instead of revolving credit facility.\n'
             '- If the lead bank is not specified, omit the parentheses.\n'
-            '- Use bps when describing interest rates.\n'
-            '- If a field is missing, put "unknown" or skip it where appropriate, but do not guess or invent.\n'
+            '- Use bps when describing interest rates. Most interest rates have a spread, try to use SOFR or LIBOR + x-y bps where possible.\n'
+            '- If a field is missing, put "unknown" or skip it where appropriate, but do not guess or invent any information.\n'
             '- Do not combine or split facilities unless the 10-Q does so.\n'
-            '- Look for information about: ABL facilities, revolvers, term loans, senior notes, credit agreements, borrowing capacity, and availability.\n'
+            '- Look for information about: notes owed, revolvers, term loans, senior notes, credit agreements, borrowing capacity, and availability.\n'
+            '- Your output should be organized from facilities coming due first to those coming due last.\n'
             '- Do NOT include any other information, bullets, or narrative.\n'
             '- Do NOT summarize liquidity, cash, or other financials. Only output the facilities in the format above.\n'
             'Examples:\n'
-            '$129.5M HF-T1 Dist. Center Loan @ SOFR + 185 bps mat. 3/2026 (BofA)\n'
-            '$73M HF-T2 Dist. Center Construction Loan @ SOFR + 185 bps mat. 4/2026 (BofA)\n'
-            '$750M revolver @ SOFR + 100–150 bps mat. 12/2026 (BofA)\n'
+            '$129.5M HF-T1 Distribution Center Loan @ SOFR + 120 -185 bps mat. 3/2026 (BofA)\n'
+            '$73M HF-T2 Distribuition Center Construction Loan @ SOFR + 40 - 185 bps mat. 4/2026 (BofA)\n'
+            '$750M Revolving Credit Facility @ SOFR + 100–150 bps mat. 12/2026 (PNC)\n'
             '$130.8M China Operational Loans @ 2.00–2.60% mat. var. 2026 (BofChina)\n'
             '$150M China DC Expansion Loan @ 2.70%  mat. 12/2032 (BofChina)\n\n'
             '---\n'
             f"10-Q Text (truncated):\n{truncated_text}"
-            "If the 10-Q lacks details, use reliable sources to fill gaps, but do not make up any information. Ensure all output is concise and follows the specified formats."
+            "If the 10-Q lacks details, use reliable information from the 10-K to fill gaps, but do not make up any information. Ensure all output is concise and follows the specified formats."
         )
         try:
             response = llm_client.chat.completions.create(
