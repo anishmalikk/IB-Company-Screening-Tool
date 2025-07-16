@@ -19,7 +19,7 @@ from itertools import islice
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
+MODEL_NAME = os.getenv("10Q_MODEL_NAME", "MODEL_NAME")
 llm_client = OpenAI(api_key=OPENAI_API_KEY)
 edgar = EdgarClient(user_agent="Company Screener Tool contact@companyscreenertool.com")
 
@@ -70,6 +70,7 @@ def get_laymanized_debt_liquidity(tenq_url: str, debug=False):
             '- If the facility name is long, abbreviate only if the abbreviation is used in the 10-Q.\n'
             '- If the 10-Q provides a table, use the names and amounts from the table, not from narrative summaries (if they are complete facility amounts, not usage or debt owed).\n'
             '- If both committed and outstanding amounts are present, always prefer the committed/maximum size.\n'
+            '- Use updated information from the newest credit agreements. If a facility amount was updated in a recent amendment, use the updated amount. Again, give the full facility amount, not the current usage or debt owed.\n'
             '- If the lead bank is not specified, omit the parentheses.\n'
             '- Use bps when describing interest rates. Most interest rates have a spread, try to use SOFR or LIBOR + x-y bps where possible.\n'
             '- If a field is missing, put "unknown" or skip it where appropriate, but do not guess or invent any information.\n'
