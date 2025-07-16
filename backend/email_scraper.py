@@ -12,16 +12,15 @@ MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 llm_client = OpenAI(api_key=OPENAI_API_KEY)
 
-# At the top of the file, ensure openai is imported (if not already)
 try:
     import openai
 except ImportError:
     openai = None
 
-def serp_api_search(company_name, query, num_results=20):
+def serp_api_search(company_name, query, num_results=40):
     search = GoogleSearch({
         "q": f"{company_name} {query}",
-        "api_key": SERPAPI_API_KEY,  # Fixed typo here
+        "api_key": SERPAPI_API_KEY,
         "num": num_results
     })
     results = search.get_dict()

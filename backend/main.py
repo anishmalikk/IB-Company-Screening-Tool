@@ -28,6 +28,28 @@ async def company_info(company_name: str, ticker: str):
     tenq_link = get_latest_10q_link_for_ticker(ticker)
     debt_liquidity_summary = get_laymanized_debt_liquidity(tenq_link) if tenq_link else ""
     email_info = scrape_emails(company_name, cfo, treasurer)
+    industry_blurb_full = get_industry_and_blurb(company_name)
+    # Split industry_blurb into industry (first 5 words, capitalized) and the rest as industry_blurb
+    if industry_blurb_full:
+        industry_lines = industry_blurb_full.strip().splitlines()
+        if industry_lines:
+            # If the first line contains a period, split by the first period
+            first_line = industry_lines[0].strip()
+            if '.' in first_line:
+                period_idx = first_line.find('.')
+                industry = first_line[:period_idx+1].strip()
+                blurb = first_line[period_idx+1:].strip()
+                # If there are more lines, add them to the blurb
+                if len(industry_lines) > 1:
+                    blurb += "\n" + "\n".join(industry_lines[1:]).strip()
+            else:
+                industry = first_line
+                blurb = "\n".join(industry_lines[1:]).strip() if len(industry_lines) > 1 else ""
+    else:
+        industry = ""
+        blurb = ""
+    # Split debt_liquidity_summary into a list of non-empty lines
+    debt_liquidity_lines = [line.strip() for line in debt_liquidity_summary.splitlines() if line.strip()]
     return {
         "executives": {
             "cfo": cfo,
@@ -35,6 +57,8 @@ async def company_info(company_name: str, ticker: str):
             "ceo": ceo
         },
         "emails": email_info,
+        "industry": industry,
+        "industry_blurb": blurb,
         "latest_10q_link": tenq_link,
-        "debt_liquidity_summary": debt_liquidity_summary
+        "debt_liquidity_summary": debt_liquidity_lines
     }
