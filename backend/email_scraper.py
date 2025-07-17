@@ -17,11 +17,38 @@ try:
 except ImportError:
     openai = None
 
-def serp_api_search(company_name, query, num_results=40):
+GENERIC_EMAIL_PREFIXES = {"pr", "info", "privacy", "investor", "investors", "contact", "support", "admin", "help", "careers", "jobs", "media", "press", "webmaster", "office", "general", "ir", "corp", "ceo", "cfo", "treasurer"}
+
+def is_generic_email(email):
+    local = email.split('@')[0].lower()
+    # Remove numbers for robust matching
+    local_clean = re.sub(r'[^a-z.]', '', local)
+    # Split on dots and check each part
+    parts = local_clean.split('.')
+    for part in parts:
+        if part in GENERIC_EMAIL_PREFIXES:
+            return True
+    # Also check if the whole local part (with/without dots) matches any prefix
+    if local_clean in GENERIC_EMAIL_PREFIXES or local_clean.replace('.', '') in GENERIC_EMAIL_PREFIXES:
+        return True
+    return False
+
+# Helper to extract all non-generic emails from snippets
+def extract_all_non_generic_emails(snippets, domain):
+    email_pattern = rf'([a-zA-Z0-9_.+-]+{re.escape(domain)})'
+    emails = set()
+    for snippet in snippets:
+        for email in re.findall(email_pattern, snippet):
+            if not is_generic_email(email):
+                emails.add(email)
+    return list(emails)
+
+def serp_api_search(company_name, query, num_results=20, start=0):
     search = GoogleSearch({
         "q": f"{company_name} {query}",
         "api_key": SERPAPI_API_KEY,
-        "num": num_results
+        "num": num_results,
+        "start": start
     })
     results = search.get_dict()
     snippets = []
@@ -166,9 +193,11 @@ def infer_format_from_email(email, name=None):
 
 # GPT fallback for email format inference
 
-def gpt_infer_format(name, email):
-    """Call GPT to infer the email format given a name and an email."""
+def gpt_infer_format(name, emails):
+    """Call GPT to infer the email format given a name and a list of emails."""
     try:
+        if not emails:
+            return None
         # Try to use llm_client if available
         try:
             from llm_client import get_llm_client
@@ -176,15 +205,19 @@ def gpt_infer_format(name, email):
             use_llm_client = True
         except ImportError:
             use_llm_client = False
+        email_list_str = "\n".join(emails)
         prompt = f"""
-Given the name '{name}' and the email '{email}', what is the most likely email format used by this company? Reply with only the format string, e.g., 'first_initiallast', 'first.last', 'firstlast', 'first', 'last', 'first_initial.last', etc. Do not explain, just reply with the format string.
+Given the name '{name}' and the following emails from the same company, pick the one that best matches a real employee's email (not a generic or department address), and reply with only the most likely email format used by this company for employees. Reply with only the format string, e.g., 'first_initiallast', 'first.last', 'firstlast', 'first', 'last', 'first_initial.last', etc. Do not explain, just reply with the format string.
+
+Emails:
+{email_list_str}
 
 Examples:
-Name: John Smith, Email: john.smith@company.com -> first.last
-Name: Jane Doe, Email: jdoe@company.com -> first_initiallast
-Name: Robert Brown, Email: rbrown@company.com -> first_initiallast
-Name: Mary Ann Lee, Email: mary.lee@company.com -> first.last
-Name: Sarah Prillman, Email: sprillman@company.com -> first_initiallast
+Name: John Smith, Emails: john.smith@company.com, info@company.com -> first.last
+Name: Jane Doe, Emails: jdoe@company.com, pr@company.com -> first_initiallast
+Name: Robert Brown, Emails: rbrown@company.com, support@company.com -> first_initiallast
+Name: Mary Ann Lee, Emails: mary.lee@company.com, contact@company.com -> first.last
+Name: Sarah Prillman, Emails: sprillman@company.com, admin@company.com -> first_initiallast
 """
         if use_llm_client:
             response = client.chat.completions.create(
@@ -210,7 +243,7 @@ Name: Sarah Prillman, Email: sprillman@company.com -> first_initiallast
         return None
 
 
-def scrape_emails(company_name, cfo_name, treasurer_name):
+def scrape_emails(company_name, cfo_name, treasurer_name, ceo_name):
     # Step 1: Find email domain
     query_1 = f"{company_name} email format"
     result_1 = serp_api_search(company_name, query_1, num_results=60)
@@ -223,23 +256,40 @@ def scrape_emails(company_name, cfo_name, treasurer_name):
     if not domain:
         return {"error": "Could not find domain"}
 
-    # Step 2: Search known emails with domain
+    # Step 2: Search known emails with domain (first page, CFO)
     query_2 = f'{company_name} "{domain}" {cfo_name} email'
-    result_2 = serp_api_search(company_name, query_2, num_results=60)
-
-    # Step 3: Extract real emails/names from snippets
+    result_2 = serp_api_search(company_name, query_2, num_results=20)
     known_emails = extract_known_emails(result_2['snippets'], domain)
-    # Only keep those with a name and a valid email format
     known_emails = [(n, e) for n, e in known_emails if n and detect_email_format(n, e)]
+
+    # If not found, try CEO
+    if not known_emails and ceo_name:
+        query_3 = f'{company_name} "{domain}" {ceo_name} email'
+        result_3 = serp_api_search(company_name, query_3, num_results=20)
+        known_emails = extract_known_emails(result_3['snippets'], domain)
+        known_emails = [(n, e) for n, e in known_emails if n and detect_email_format(n, e)]
+        all_snippets = result_2['snippets'] + result_3['snippets']
+    else:
+        all_snippets = result_2['snippets']
+
+    # If still not found, try Treasurer (if not 'same' and not empty)
+    if not known_emails and treasurer_name and treasurer_name.lower() != "same":
+        query_4 = f'{company_name} "{domain}" {treasurer_name} email'
+        result_4 = serp_api_search(company_name, query_4, num_results=20)
+        known_emails = extract_known_emails(result_4['snippets'], domain)
+        known_emails = [(n, e) for n, e in known_emails if n and detect_email_format(n, e)]
+        all_snippets = all_snippets + result_4['snippets']
+
     if not known_emails:
-        # Fallback: try to extract any email and infer format
-        any_email = extract_any_email(result_2['snippets'], domain)
+        # Fallback: try to extract all non-generic emails and infer format
+        all_emails = extract_all_non_generic_emails(all_snippets, domain)
         fmt = None
-        if any_email:
-            fmt = infer_format_from_email(any_email, cfo_name)
+        if all_emails:
+            # Try to infer from the first one
+            fmt = infer_format_from_email(all_emails[0], cfo_name)
             if not fmt:
-                # Try GPT fallback
-                fmt = gpt_infer_format(cfo_name, any_email)
+                # Try GPT fallback with all non-generic emails
+                fmt = gpt_infer_format(cfo_name, all_emails)
             if fmt:
                 cfo_email = construct_email(cfo_name, domain, fmt) if cfo_name and cfo_name.lower() != "same" else None
                 treasurer_email = construct_email(treasurer_name, domain, fmt) if treasurer_name and treasurer_name.lower() != "same" else None
@@ -248,8 +298,8 @@ def scrape_emails(company_name, cfo_name, treasurer_name):
                     "format": fmt,
                     "cfo_email": cfo_email,
                     "treasurer_email": treasurer_email,
-                    "source_email": any_email,
-                    "source": "gpt-inferred format" if not infer_format_from_email(any_email, cfo_name) else "inferred from email local part"
+                    "source_email": all_emails[0],
+                    "source": "gpt-inferred format" if not infer_format_from_email(all_emails[0], cfo_name) else "inferred from email local part"
                 }
         return {"error": "No real emails found"}
 
@@ -257,8 +307,9 @@ def scrape_emails(company_name, cfo_name, treasurer_name):
     name, email = known_emails[0]
     fmt = detect_email_format(name, email)
     if not fmt:
-        # Try GPT fallback
-        fmt = gpt_infer_format(name, email)
+        # Try GPT fallback with all non-generic emails
+        all_emails = extract_all_non_generic_emails(all_snippets, domain)
+        fmt = gpt_infer_format(name, all_emails) if all_emails else None
         if not fmt:
             return {"error": "Could not detect email format"}
     # Step 5: Construct emails
@@ -274,6 +325,7 @@ def scrape_emails(company_name, cfo_name, treasurer_name):
         "source_email": email
     }
 
-if __name__ == "__main__":
-    result = scrape_emails("Urban One", "Peter D. Thompson", "same")
-    print(result)
+#local testing in IDE:
+# if __name__ == "__main__":
+#     result = scrape_emails("Alcon AG", "Tim Stonesifer", "Brice Zimmermann", "David J. Endicott")
+#     print(result)

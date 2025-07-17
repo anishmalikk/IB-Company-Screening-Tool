@@ -16,6 +16,66 @@ from sec_edgar_api.EdgarClient import EdgarClient
 from bs4 import Tag
 from dotenv import load_dotenv
 from itertools import islice
+from difflib import SequenceMatcher
+
+TARGET_SECTIONS = {
+    "debt": ["debt", "credit agreement", "credit facilities", "notes payable", "indebtedness", "long-term debt"],
+    "liquidity": ["liquidity", "capital resources", "financial condition", "cash flows"]
+}
+
+def fuzzy_match_score(a, b):
+    return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+
+def is_section_header(line):
+    norm = line.strip()
+    if len(norm) < 5 or len(norm) > 100:
+        return False
+    # Starts with number and period or parenthesis (e.g., '6. ', '(6) ')
+    if re.match(r'^\(?\d+(\.\d+)*\)?[\s\-–\.]*[A-Za-z]', norm):
+        return True
+    # Title case with more than 2 words (e.g., 'Liquidity and Capital Resources')
+    if norm.istitle() and len(norm.split()) > 2:
+        return True
+    # All uppercase
+    if norm.isupper():
+        return True
+    return False
+
+def extract_clean_sections(soup: BeautifulSoup, min_len=300, max_len=10000, debug=False):
+    text = soup.get_text(separator="\n", strip=True)
+    lines = text.splitlines()
+    section_headers = []
+    for i, line in enumerate(lines):
+        if i < len(lines) * 0.1:  # ignore first 10% of document (cover, TOC, etc.)
+            continue
+        if is_section_header(line):
+            section_headers.append((i, line.strip()))
+    selected_sections = {}
+    FUZZY_THRESHOLD = 0.7
+    for target, keywords in TARGET_SECTIONS.items():
+        matches = []
+        for idx, heading in section_headers:
+            for kw in keywords:
+                score = fuzzy_match_score(heading.lower(), kw.lower())
+                if kw in heading.lower():
+                    score += 0.5  # exact boost
+                if score >= FUZZY_THRESHOLD:
+                    matches.append((idx, heading, score, kw))
+        # Sort matches by their position in the document
+        matches = sorted(matches, key=lambda x: x[0])
+        if debug and matches:
+            print(f"Matched sections for '{target}':")
+            for idx, heading, score, kw in matches:
+                print(f"  - '{heading}' (score={score:.2f}, keyword='{kw}') at line {idx}")
+        # Extract all matched sections
+        for i, (idx, header, score, kw) in enumerate(matches):
+            next_idx = matches[i+1][0] if i+1 < len(matches) else len(lines)
+            content = "\n".join(lines[idx+1:next_idx])
+            if len(content) >= min_len:
+                key = f"{target}_{i+1}" if len(matches) > 1 else target
+                selected_sections[key] = f"=== {header} (score={score:.2f}, keyword='{kw}') ===\n{content[:max_len]}"
+    return selected_sections
+
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -41,6 +101,22 @@ def safe_slice(val, n=500):
     s = str(val) if val is not None else ""
     return s[:n]
 
+def extract_recent_facility_lines(text):
+    # Look for lines with 'as of' or 'at' and facility keywords
+    lines = text.splitlines()
+    recent_lines = []
+    facility_keywords = [
+        'Term Facility', 'Revolving Credit Facility', 'Credit Facility', 'Term Loan', 'Revolver', 'Facility', 'Debt', 'Borrowings'
+    ]
+    date_pattern = r'(as of|at) [A-Z][a-z]+ \d{1,2}, \d{4}'
+    for line in lines:
+        if any(kw in line for kw in facility_keywords) and re.search(date_pattern, line):
+            recent_lines.append(line.strip())
+        # Also catch lines like 'At May 31, 2025, the outstanding balance of the Term Facility was $250.0 million.'
+        elif re.search(r'outstanding balance of .*Facility.* (?:was|is) \$[\d,.]+', line):
+            recent_lines.append(line.strip())
+    return recent_lines
+
 def get_laymanized_debt_liquidity(tenq_url: str, debug=False):
     """
     Given a 10-Q URL, fetch and parse the HTML, extract the text, and use the LLM to extract and list each credit facility or note in the specified format, in one step.
@@ -54,19 +130,35 @@ def get_laymanized_debt_liquidity(tenq_url: str, debug=False):
         soup = BeautifulSoup(response.content, "html.parser")
         for script in soup(["script", "style"]):
             script.decompose()
-        tenq_text = soup.get_text(separator="\n", strip=True)
-        if debug:
-            print(f"Input 10-Q text length: {len(tenq_text)}")
-        # Truncate to avoid token limits
-        truncated_text = tenq_text[20000:120000]  # token limit is 120k
+        # Use improved section extraction
+        sections = extract_clean_sections(soup, debug=debug)
+        if sections:
+            relevant_text = "\n\n".join(sections.values())
+            if debug:
+                print("\n=== Extracted Relevant Sections ===\n")
+                print(relevant_text)
+        else:
+            # Fallback: use first 120,000 chars
+            text = soup.get_text(separator="\n", strip=True)
+            relevant_text = text[:120000]
+            if debug:
+                print("No relevant sections found, using fallback text.")
+        # Extract most recent facility lines
+        recent_lines = extract_recent_facility_lines(relevant_text)
+        if debug and recent_lines:
+            print("\n=== Most Recent Facility Lines (for LLM context) ===\n")
+            for l in recent_lines:
+                print(l)
+        # Remove any context about 'most recent value' or 'current balance' and focus on full facility size
+        context = ""
         prompt = (
             'Below are the "Debt" and "Liquidity and Capital Resources" sections from a company 10-Q.\n'
             'Your ONLY task is to extract and list each credit facility or note in the following format, one per line:\n'
-            'facility name @ (interest rate) mat. mm/yyyy (Lead Bank)\n'
+            'facility amount facility name @ (interest rate) mat. mm/yyyy (Lead Bank)\n'
             '\n'
             'Instructions:\n'
             '- Use the **official, full facility name** as written in the 10-Q, not a generic or invented name.\n'
-            '- Always use the **maximum committed amount** or availability (not the current outstanding/borrowed amount).\n'
+            '- ALWAYS use the **MAXIMIM FACILITY SIZE** or availability (NOT THE CURRENT OUTSTANDING/BORROWED AMOUNT). This is extremely important.\n'
             '- If the facility name is long, abbreviate only if the abbreviation is used in the 10-Q.\n'
             '- If the 10-Q provides a table, use the names and amounts from the table, not from narrative summaries (if they are complete facility amounts, not usage or debt owed).\n'
             '- If both committed and outstanding amounts are present, always prefer the committed/maximum size.\n'
@@ -78,15 +170,25 @@ def get_laymanized_debt_liquidity(tenq_url: str, debug=False):
             '- Look for information about: notes owed, revolvers, term loans, senior notes, credit agreements, borrowing capacity, and availability.\n'
             '- Your output should be organized from facilities coming due first to those coming due last.\n'
             '- Do NOT include any other information, bullets, or narrative.\n'
-            '- Do NOT summarize liquidity, cash, or other financials. Only output the facilities in the format above.\n'
             'Examples:\n'
-            '$129.5M HF-T1 Distribution Center Loan @ SOFR + 120 -185 bps mat. 3/2026 (BofA)\n'
-            '$73M HF-T2 Distribuition Center Construction Loan @ SOFR + 40 - 185 bps mat. 4/2026 (BofA)\n'
-            '$750M Revolving Credit Facility @ SOFR + 100–150 bps mat. 12/2026 (PNC)\n'
+            '$350M HF-T1 Distribution Center Loan @ SOFR + 120 -185 bps mat. 3/2026 (BofA)\n'
+            '$75M HF-T2 Distribuition Center Construction Loan @ SOFR + 40 - 185 bps mat. 4/2026 (JPM)\n'
+            '$250M Revolving Credit Facility @ SOFR + 100–150 bps mat. 12/2026 (PNC)\n'
             '$130.8M China Operational Loans @ 2.00–2.60% mat. var. 2026 (BofChina)\n'
-            '$150M China DC Expansion Loan @ 2.70%  mat. 12/2032 (BofChina)\n\n'
+            '$1B China DC Expansion Loan @ 2.70%  mat. 12/2032 (BofChina)\n\n'
+            '- Do NOT summarize liquidity, cash, or other financials. Only output the facilities in the format above.\n'
+            '\n'
+            'IMPORTANT: If the interest rate is described as \'SOFR plus 2.00%\', always convert the spread to basis points (e.g., 2.00% = 200 bps) and output as \'SOFR + 200 bps\'. Never use percent for the spread in your output.\n'
+            'Examples:\n'
+            "- If the 10-Q says 'SOFR plus 2.00%', output 'SOFR + 200 bps'\n"
+            "- If the 10-Q says 'LIBOR plus 1.75%', output 'LIBOR + 175 bps'\n\n"
+            'For notes (not facilities), use the following format:\n'
+            'note name @ (interest rate) mat. mm/yyyy\n'
+            'Examples:\n'
+            '- $50M 2.60% Senior Notes – mat. 3/2027 \n'
+            '- $100M 2.90% Senior Notes, Series B – mat. 7/2026 \n\n'
             '---\n'
-            f"10-Q Text (truncated):\n{truncated_text}"
+            f"10-Q Text (extracted):\n{relevant_text}"
             "If the 10-Q lacks details, use reliable information from the 10-K to fill gaps, but do not make up any information. Ensure all output is concise and follows the specified formats."
         )
         try:
@@ -107,3 +209,20 @@ def get_laymanized_debt_liquidity(tenq_url: str, debug=False):
         if debug:
             print(f"Error in get_laymanized_debt_liquidity: {e}")
         return "Error in get_laymanized_debt_liquidity."
+
+# Local testing in IDE:
+# if __name__ == "__main__":
+#     # You can change the ticker here for testing
+#     test_ticker = "TTEC"
+#     debug = True
+#     print(f"Testing get_latest_10q_link_for_ticker for ticker: {test_ticker}")
+#     link = get_latest_10q_link_for_ticker(test_ticker)
+#     print(f"Latest 10-Q link: {link}")
+#     if link:
+#         print("\nLaymanized Debt/Liquidity Summary:")
+#         summary = get_laymanized_debt_liquidity(link, debug=debug)
+#         if not debug:
+#             print(summary)
+#     else:
+#         print("No 10-Q link found.")
+

@@ -27,7 +27,7 @@ async def company_info(company_name: str, ticker: str):
     cfo, treasurer, ceo = parse_execs(execs_str)
     tenq_link = get_latest_10q_link_for_ticker(ticker)
     debt_liquidity_summary = get_laymanized_debt_liquidity(tenq_link) if tenq_link else ""
-    email_info = scrape_emails(company_name, cfo, treasurer)
+    email_info = scrape_emails(company_name, cfo, treasurer, ceo)
     industry_blurb_full = get_industry_and_blurb(company_name)
     # Split industry_blurb into industry (first 5 words, capitalized) and the rest as industry_blurb
     if industry_blurb_full:
