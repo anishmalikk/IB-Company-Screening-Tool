@@ -17,6 +17,8 @@ from bs4 import Tag
 from dotenv import load_dotenv
 from itertools import islice
 from difflib import SequenceMatcher
+load_dotenv()
+
 
 TARGET_SECTIONS = {
     "debt": ["debt", "credit agreement", "credit facilities", "notes payable", "indebtedness", "long-term debt"],
@@ -41,7 +43,7 @@ def is_section_header(line):
         return True
     return False
 
-def extract_clean_sections(soup: BeautifulSoup, min_len=300, max_len=10000, debug=False):
+def extract_clean_sections(soup: BeautifulSoup, min_len=300, max_len=10000, debug=False, debug_log=None):
     text = soup.get_text(separator="\n", strip=True)
     lines = text.splitlines()
     section_headers = []
@@ -64,9 +66,17 @@ def extract_clean_sections(soup: BeautifulSoup, min_len=300, max_len=10000, debu
         # Sort matches by their position in the document
         matches = sorted(matches, key=lambda x: x[0])
         if debug and matches:
-            print(f"Matched sections for '{target}':")
+            msg = f"Matched sections for '{target}':"
+            if debug_log is not None:
+                debug_log.append(msg)
+            else:
+                print(msg)
             for idx, heading, score, kw in matches:
-                print(f"  - '{heading}' (score={score:.2f}, keyword='{kw}') at line {idx}")
+                msg = f"  - '{heading}' (score={score:.2f}, keyword='{kw}') at line {idx}"
+                if debug_log is not None:
+                    debug_log.append(msg)
+                else:
+                    print(msg)
         # Extract all matched sections
         for i, (idx, header, score, kw) in enumerate(matches):
             next_idx = matches[i+1][0] if i+1 < len(matches) else len(lines)
@@ -76,7 +86,6 @@ def extract_clean_sections(soup: BeautifulSoup, min_len=300, max_len=10000, debu
                 selected_sections[key] = f"=== {header} (score={score:.2f}, keyword='{kw}') ===\n{content[:max_len]}"
     return selected_sections
 
-load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 MODEL_NAME = os.getenv("10Q_MODEL_NAME", "MODEL_NAME")
@@ -122,33 +131,49 @@ def get_laymanized_debt_liquidity(tenq_url: str, debug=False):
     Given a 10-Q URL, fetch and parse the HTML, extract the text, and use the LLM to extract and list each credit facility or note in the specified format, in one step.
     Returns the LLM's output as a string.
     """
+    debug_log = [] if debug else None
     try:
         if debug:
-            print(f"Fetching 10-Q from URL: {tenq_url}")
+            msg = f"Fetching 10-Q from URL: {tenq_url}"
+            print(msg)
+            if debug_log is not None:
+                debug_log.append(msg)
         response = requests.get(tenq_url, headers={"User-Agent": "Company Screener Tool contact@companyscreenertool.com"})
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
         for script in soup(["script", "style"]):
             script.decompose()
         # Use improved section extraction
-        sections = extract_clean_sections(soup, debug=debug)
+        sections = extract_clean_sections(soup, debug=debug, debug_log=debug_log)
         if sections:
             relevant_text = "\n\n".join(sections.values())
             if debug:
-                print("\n=== Extracted Relevant Sections ===\n")
+                msg = "\n=== Extracted Relevant Sections ===\n"
+                print(msg)
                 print(relevant_text)
+                if debug_log is not None:
+                    debug_log.append(msg)
+                    debug_log.append(relevant_text)
         else:
             # Fallback: use first 120,000 chars
             text = soup.get_text(separator="\n", strip=True)
             relevant_text = text[:120000]
             if debug:
-                print("No relevant sections found, using fallback text.")
+                msg = "No relevant sections found, using fallback text."
+                print(msg)
+                if debug_log is not None:
+                    debug_log.append(msg)
         # Extract most recent facility lines
         recent_lines = extract_recent_facility_lines(relevant_text)
         if debug and recent_lines:
-            print("\n=== Most Recent Facility Lines (for LLM context) ===\n")
+            msg = "\n=== Most Recent Facility Lines (for LLM context) ===\n"
+            print(msg)
+            if debug_log is not None:
+                debug_log.append(msg)
             for l in recent_lines:
                 print(l)
+                if debug_log is not None:
+                    debug_log.append(l)
         # Remove any context about 'most recent value' or 'current balance' and focus on full facility size
         context = ""
         prompt = (
@@ -194,35 +219,70 @@ def get_laymanized_debt_liquidity(tenq_url: str, debug=False):
         try:
             response = llm_client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[
+                    {"role": "system", "content": (
+                        "You are a precise financial document extractor. "
+                        "You always extract the maximum committed amount (not the current outstanding or historical amounts) for each facility, "
+                        "deduplicate amendments, and output only the current total facility size. "
+                        "You always convert interest rate spreads to basis points (bps) unless they are notes, and follow all formatting instructions exactly."
+                    )},
+                    {"role": "user", "content": prompt}
+                ]
             )
             llm_output = response.choices[0].message.content.strip() if response.choices and response.choices[0].message and response.choices[0].message.content else ""
         except Exception as e:
             if debug:
-                print(f"Error processing with LLM: {e}")
+                msg = f"Error processing with LLM: {e}"
+                print(msg)
+                if debug_log is not None:
+                    debug_log.append(msg)
             llm_output = "Error processing with LLM."
         if debug:
-            print("=== LLM OUTPUT ===")
+            msg = "=== LLM OUTPUT ==="
+            print(msg)
             print(safe_slice(llm_output, 1000))
+            if debug_log is not None:
+                debug_log.append(msg)
+                debug_log.append(safe_slice(llm_output, 1000))
+        # Write debug log to file if enabled
+        if debug_log is not None:
+            try:
+                with open("debug_output.txt", "w", encoding="utf-8") as f:
+                    if debug_log:
+                        for entry in debug_log:
+                            f.write(entry + "\n")
+            except Exception as file_err:
+                print(f"Failed to write debug log: {file_err}")
         return llm_output
     except Exception as e:
         if debug:
-            print(f"Error in get_laymanized_debt_liquidity: {e}")
+            msg = f"Error in get_laymanized_debt_liquidity: {e}"
+            print(msg)
+            if debug_log is not None:
+                debug_log.append(msg)
+            # Write debug log to file if enabled
+            try:
+                with open("debug_output.txt", "w", encoding="utf-8") as f:
+                    if debug_log:
+                        for entry in debug_log:
+                            f.write(entry + "\n")
+            except Exception as file_err:
+                print(f"Failed to write debug log: {file_err}")
         return "Error in get_laymanized_debt_liquidity."
 
-# Local testing in IDE:
-# if __name__ == "__main__":
-#     # You can change the ticker here for testing
-#     test_ticker = "TTEC"
-#     debug = True
-#     print(f"Testing get_latest_10q_link_for_ticker for ticker: {test_ticker}")
-#     link = get_latest_10q_link_for_ticker(test_ticker)
-#     print(f"Latest 10-Q link: {link}")
-#     if link:
-#         print("\nLaymanized Debt/Liquidity Summary:")
-#         summary = get_laymanized_debt_liquidity(link, debug=debug)
-#         if not debug:
-#             print(summary)
-#     else:
-#         print("No 10-Q link found.")
+#Local testing in IDE:
+if __name__ == "__main__":
+    # You can change the ticker here for testing
+    test_ticker = "GIC"
+    debug = False
+    print(f"Testing get_latest_10q_link_for_ticker for ticker: {test_ticker}")
+    link = get_latest_10q_link_for_ticker(test_ticker)
+    print(f"Latest 10-Q link: {link}")
+    if link:
+        print("\nLaymanized Debt/Liquidity Summary:")
+        summary = get_laymanized_debt_liquidity(link, debug=debug)
+        if not debug:
+            print(summary)
+    else:
+        print("No 10-Q link found.")
 
