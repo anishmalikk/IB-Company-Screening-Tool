@@ -17,6 +17,8 @@ from bs4 import Tag
 from dotenv import load_dotenv
 from itertools import islice
 from difflib import SequenceMatcher
+import collections
+
 load_dotenv()
 
 
@@ -42,6 +44,99 @@ def is_section_header(line):
     if norm.isupper():
         return True
     return False
+
+# Improved extraction: finds all relevant sections, tables, and referenced notes/exhibits
+EXPANDED_KEYWORDS = [
+    "debt", "credit agreement", "credit facilities", "notes payable", "indebtedness", "long-term debt",
+    "term loan", "term facility", "revolving credit facility", "note", "exhibit", "schedule", "obligations",
+    "borrowings", "secured", "unsecured", "guarantee", "indenture", "senior notes", "convertible", "loan agreement",
+    "amendment", "table", "summary", "schedule of long-term debt", "liquidity", "capital resources", "financial condition",
+    "cash flows", "supplemental", "supplemental information", "commitment", "outstanding", "principal", "interest"
+]
+NOTE_REGEX = re.compile(r'(note|exhibit|schedule)\s*\d+[A-Za-z]*', re.IGNORECASE)
+
+# Helper: extract tables and their captions/headings
+
+def extract_tables_with_captions(soup):
+    tables = []
+    for table in soup.find_all('table'):
+        # Try to find a preceding heading, bold, or all-caps line
+        caption = None
+        prev = table.find_previous(['b', 'strong', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
+        if prev:
+            caption = prev.get_text(strip=True)
+        else:
+            # Fallback: look for previous text node
+            prev_text = table.find_previous(string=True)
+            if prev_text:
+                caption = prev_text.strip()
+        tables.append((caption, str(table)))
+    return tables
+
+# Helper: find cross-references like 'see Note 7'
+def find_note_references(text):
+    return set(re.findall(r'Note\s*\d+[A-Za-z]*', text, re.IGNORECASE))
+
+# Preferred comprehensive extraction function
+def extract_all_relevant_sections(soup, min_len=200, max_len=15000, debug=False, debug_log=None):
+    """
+    Extract all relevant sections, tables, and referenced notes/exhibits from the filing.
+    Returns a dict {header: content, ...}
+    """
+    text = soup.get_text(separator="\n", strip=True)
+    lines = text.splitlines()
+    section_headers = []
+    for i, line in enumerate(lines):
+        if i < len(lines) * 0.1:
+            continue
+        if is_section_header(line):
+            section_headers.append((i, line.strip()))
+    # 1. Match expanded keywords and regexes
+    matches = []
+    for idx, heading in section_headers:
+        for kw in EXPANDED_KEYWORDS:
+            if kw in heading.lower() or NOTE_REGEX.search(heading):
+                matches.append((idx, heading, kw))
+    # 2. Extract all matched sections
+    extracted = collections.OrderedDict()
+    for i, (idx, header, kw) in enumerate(matches):
+        next_idx = matches[i+1][0] if i+1 < len(matches) else len(lines)
+        content = "\n".join(lines[idx+1:next_idx])
+        if len(content) >= min_len:
+            key = f"{header} (keyword={kw})"
+            extracted[key] = content[:max_len]
+    # 3. Extract tables and captions
+    tables = extract_tables_with_captions(soup)
+    for caption, table_html in tables:
+        if caption:
+            for kw in EXPANDED_KEYWORDS:
+                if kw in caption.lower() or NOTE_REGEX.search(caption):
+                    key = f"TABLE: {caption}"
+                    extracted[key] = table_html
+                    break
+    # 4. Find cross-references in matched sections and extract those notes
+    referenced_notes = set()
+    for content in extracted.values():
+        referenced_notes.update(find_note_references(content))
+    # Now, for each referenced note, try to find and extract it
+    for note in referenced_notes:
+        for idx, heading in section_headers:
+            if note.lower() in heading.lower():
+                next_idx = None
+                for j, (idx2, heading2) in enumerate(section_headers):
+                    if idx2 > idx:
+                        next_idx = idx2
+                        break
+                if next_idx is None:
+                    next_idx = len(lines)
+                content = "\n".join(lines[idx+1:next_idx])
+                if len(content) >= min_len:
+                    key = f"{heading} (cross-ref)"
+                    extracted[key] = content[:max_len]
+    if debug and debug_log is not None:
+        debug_log.append(f"Extracted {len(extracted)} relevant sections/tables/notes.")
+    return extracted
+
 
 def extract_clean_sections(soup: BeautifulSoup, min_len=300, max_len=10000, debug=False, debug_log=None):
     text = soup.get_text(separator="\n", strip=True)
@@ -270,19 +365,58 @@ def get_laymanized_debt_liquidity(tenq_url: str, debug=False):
                 print(f"Failed to write debug log: {file_err}")
         return "Error in get_laymanized_debt_liquidity."
 
+def test_section_extraction(ticker, output_file="section_extraction_test.txt"):
+    """
+    Fetch the latest 10-Q for the given ticker, extract all relevant sections, and write them to a file.
+    """
+    link = get_latest_10q_link_for_ticker(ticker)
+    if not link:
+        print(f"No 10-Q link found for ticker {ticker}.")
+        return
+    print(f"Testing section extraction for ticker: {ticker}")
+    print(f"10-Q link: {link}")
+    response = requests.get(link, headers={"User-Agent": "Company Screener Tool contact@companyscreenertool.com"})
+    response.raise_for_status()
+    soup = BeautifulSoup(response.content, "html.parser")
+    extracted = extract_all_relevant_sections(soup, debug=True)
+    with open(output_file, "w", encoding="utf-8") as f:
+        for header, content in extracted.items():
+            f.write(f"\n==== {header} ====" + "\n")
+            f.write(content if isinstance(content, str) else str(content))
+            f.write("\n\n")
+    print(f"Extracted sections written to {output_file}")
+
 #Local testing in IDE:
 if __name__ == "__main__":
     # You can change the ticker here for testing
-    test_ticker = "GIC"
-    debug = False
-    print(f"Testing get_latest_10q_link_for_ticker for ticker: {test_ticker}")
-    link = get_latest_10q_link_for_ticker(test_ticker)
-    print(f"Latest 10-Q link: {link}")
-    if link:
-        print("\nLaymanized Debt/Liquidity Summary:")
-        summary = get_laymanized_debt_liquidity(link, debug=debug)
-        if not debug:
-            print(summary)
-    else:
-        print("No 10-Q link found.")
+    test_ticker = "SWKS"
+    # debug = False
+    # print(f"Testing get_latest_10q_link_for_ticker for ticker: {test_ticker}")
+    # link = get_latest_10q_link_for_ticker(test_ticker)
+    # print(f"Latest 10-Q link: {link}")
+    # if link:
+    #     print("\nLaymanized Debt/Liquidity Summary:")
+    #     summary = get_laymanized_debt_liquidity(link, debug=debug)
+    #     if not debug:
+    #         print(summary)
+    # else:
+    #     print("No 10-Q link found.")
 
+    # Usage for local testing (specifically to test the section extraction algorithm):
+    #test_section_extraction(test_ticker)
+
+
+# need to come up with a new algorithm to make the extraction more accurate. this is how I plan to do this:
+# first, perfect the section extraction algorithm. we need to get all the information possible that relates to the credit
+# facilities, even if they are in sections that are different from the debt and liquidity sections. for example if they are
+# in the footnotes, exhibits, or even in the notes that are apart from the debt section, we want to take a note of it if any
+# debt is mentioned. 
+
+# second, we are going to do 2 passes to GPT for each. I think using a json to structure information will be best. one
+# format can be for bank notes and another can be for facilties like revolvers and term loans. in the first pass, we are aiming to extract
+# all the relevant information, and fill out the structured json. in the second pass, we are going to try to make the exported notes that
+# we are finally going to return over to the user  by doing this process in two passes instead of one, we should increase accuracy of our
+# output
+
+# we also need to do some prompt engineering. give GPT more good and bad examples. break the prompts into stages, and give gpt step by step
+# what to do.
