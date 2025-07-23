@@ -242,6 +242,20 @@ Name: Sarah Prillman, Emails: sprillman@company.com, admin@company.com -> first_
         print(f"GPT fallback failed: {e}")
         return None
 
+# Add a set of fake/test names to filter
+FAKE_TEST_NAMES = {"jane.doe", "john.smith", "test.user", "test", "example", "demo", "foo.bar", "foo", "bar", "sample.user", "sample"}
+
+def is_fake_or_test_email(email):
+    local = email.split('@')[0].lower()
+    # Remove numbers and special chars for robust matching
+    local_clean = re.sub(r'[^a-z.]', '', local)
+    if local_clean in FAKE_TEST_NAMES:
+        return True
+    # Also check for patterns like 'test', 'demo', etc. in the local part
+    for fake in FAKE_TEST_NAMES:
+        if fake in local_clean:
+            return True
+    return False
 
 def scrape_emails(company_name, cfo_name, treasurer_name, ceo_name):
     # Step 1: Find email domain
@@ -283,6 +297,8 @@ def scrape_emails(company_name, cfo_name, treasurer_name, ceo_name):
     if not known_emails:
         # Fallback: try to extract all non-generic emails and infer format
         all_emails = extract_all_non_generic_emails(all_snippets, domain)
+        # Filter out fake/test emails
+        all_emails = [e for e in all_emails if not is_fake_or_test_email(e)]
         fmt = None
         if all_emails:
             # Try to infer from the first one
@@ -298,17 +314,22 @@ def scrape_emails(company_name, cfo_name, treasurer_name, ceo_name):
                     "format": fmt,
                     "cfo_email": cfo_email,
                     "treasurer_email": treasurer_email,
-                    "source_email": all_emails[0],
+                    "source_email": all_emails[0] if all_emails else None,
                     "source": "gpt-inferred format" if not infer_format_from_email(all_emails[0], cfo_name) else "inferred from email local part"
                 }
         return {"error": "No real emails found"}
 
     # Step 4: Detect email format from the first valid pair
-    name, email = known_emails[0]
+    # Filter known_emails for fake/test emails
+    filtered_known_emails = [(n, e) for n, e in known_emails if not is_fake_or_test_email(e)]
+    if not filtered_known_emails:
+        return {"error": "No real emails found (all were fake/test)"}
+    name, email = filtered_known_emails[0]
     fmt = detect_email_format(name, email)
     if not fmt:
         # Try GPT fallback with all non-generic emails
         all_emails = extract_all_non_generic_emails(all_snippets, domain)
+        all_emails = [e for e in all_emails if not is_fake_or_test_email(e)]
         fmt = gpt_infer_format(name, all_emails) if all_emails else None
         if not fmt:
             return {"error": "Could not detect email format"}

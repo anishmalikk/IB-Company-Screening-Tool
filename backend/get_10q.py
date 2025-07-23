@@ -21,8 +21,8 @@ load_dotenv()
 
 
 TARGET_SECTIONS = {
-    "debt": ["debt", "credit agreement", "credit facilities", "notes payable", "indebtedness", "long-term debt"],
-    "liquidity": ["liquidity", "capital resources", "financial condition", "cash flows"]
+    "debt": ["debt", "credit agreement", "credit facilities", "notes payable", "indebtedness", "long-term debt", "term loan", "term facility", "revolving credit facility"],
+    "liquidity": ["liquidity", "capital resources", "financial condition", "liquidity and capital resources"]
 }
 
 def fuzzy_match_score(a, b):
