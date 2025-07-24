@@ -389,28 +389,28 @@ def test_section_extraction(ticker, output_file="section_extraction_test.txt"):
 #Local testing in IDE:
 if __name__ == "__main__":
     # You can change the ticker here for testing
-    test_ticker = "SWKS"
-    # debug = False
-    # print(f"Testing get_latest_10q_link_for_ticker for ticker: {test_ticker}")
-    # link = get_latest_10q_link_for_ticker(test_ticker)
-    # print(f"Latest 10-Q link: {link}")
-    # if link:
-    #     print("\nLaymanized Debt/Liquidity Summary:")
-    #     summary = get_laymanized_debt_liquidity(link, debug=debug)
-    #     if not debug:
-    #         print(summary)
-    # else:
-    #     print("No 10-Q link found.")
+    test_ticker = "WAY"
+    debug = False
+    print(f"Testing get_latest_10q_link_for_ticker for ticker: {test_ticker}")
+    link = get_latest_10q_link_for_ticker(test_ticker)
+    print(f"Latest 10-Q link: {link}")
+    if link:
+        print("\nLaymanized Debt/Liquidity Summary:")
+        summary = get_laymanized_debt_liquidity(link, debug=debug)
+        if not debug:
+            print(summary)
+    else:
+        print("No 10-Q link found.")
 
     # Usage for local testing (specifically to test the section extraction algorithm):
-    #test_section_extraction(test_ticker)
+    test_section_extraction(test_ticker)
 
 
 # need to come up with a new algorithm to make the extraction more accurate. this is how I plan to do this:
 # first, perfect the section extraction algorithm. we need to get all the information possible that relates to the credit
 # facilities, even if they are in sections that are different from the debt and liquidity sections. for example if they are
 # in the footnotes, exhibits, or even in the notes that are apart from the debt section, we want to take a note of it if any
-# debt is mentioned. 
+# debt is mentioned.
 
 # second, we are going to do 2 passes to GPT for each. I think using a json to structure information will be best. one
 # format can be for bank notes and another can be for facilties like revolvers and term loans. in the first pass, we are aiming to extract
