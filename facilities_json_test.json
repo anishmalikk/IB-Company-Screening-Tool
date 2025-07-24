@@ -1,78 +1,33 @@
 {
   "facilities": [
     {
-      "name": "Revolving Facility",
-      "max_amount": "850,000",
+      "name": "Credit Facility",
+      "max_amount": "2,700,000,000",
       "currency": "USD",
-      "interest_rate": "Base rate or SOFR rate + applicable margin (0.85% to 1.20%)",
-      "maturity": "June 2028",
+      "interest_rate": "1.375% above SOFR",
+      "maturity": "MISSING",
       "lead_bank": "MISSING",
-      "source_text": "In June 2023, we entered into a $1,150,000 unsecured multi-currency credit facility with a group of banks, which provides for a term loan facility in the aggregate principal amount of $300,000 (the \"Term Loan Facility\"), maturing in June 2026, and a multicurrency revolving credit facility in the aggregate principal amount of $850,000 (the \"Revolving Facility\"), maturing in June 2028 (the \"New Credit Agreement\")."
+      "source_text": "As of March 29, 2025, the company had $1.6 billion of borrowings outstanding under its credit facility including $925.0 million outstanding under the delayed draw term loan."
     },
     {
-      "name": "Term Loan Facility",
-      "max_amount": "300,000",
+      "name": "Delayed Draw Term Loan",
+      "max_amount": "MISSING",
       "currency": "USD",
-      "interest_rate": "Base rate or SOFR rate + applicable margin (0.85% to 1.20%)",
-      "maturity": "June 2026",
+      "interest_rate": "1.375% above SOFR",
+      "maturity": "October 21, 2026",
       "lead_bank": "MISSING",
-      "source_text": "In June 2023, we entered into a $1,150,000 unsecured multi-currency credit facility with a group of banks, which provides for a term loan facility in the aggregate principal amount of $300,000 (the \"Term Loan Facility\"), maturing in June 2026, and a multicurrency revolving credit facility in the aggregate principal amount of $850,000 (the \"Revolving Facility\"), maturing in June 2028 (the \"New Credit Agreement\")."
+      "source_text": "The delayed draw term loan amortizes in quarterly installments due on the last day of each fiscal quarter, and commenced on December 31, 2022..."
     }
   ],
   "notes": [
     {
-      "name": "5.600% Notes due 2028",
-      "max_amount": "350,000",
+      "name": "Convertible Senior Notes",
+      "max_amount": "747,499,000",
       "currency": "USD",
-      "interest_rate": "5.600%",
+      "interest_rate": "1.00%",
       "maturity": "MISSING",
       "lead_bank": "MISSING",
-      "source_text": "In September 2023, we completed an underwritten public offering of $350,000 aggregate principal amount of 5.600% Notes due 2028."
-    },
-    {
-      "name": "5.800% Notes due 2033",
-      "max_amount": "500,000",
-      "currency": "USD",
-      "interest_rate": "5.800%",
-      "maturity": "MISSING",
-      "lead_bank": "MISSING",
-      "source_text": "In September 2023, we completed an underwritten public offering of $500,000 aggregate principal amount of 5.800% Notes due 2033."
-    },
-    {
-      "name": "4.500% Notes due 2029",
-      "max_amount": "600,000",
-      "currency": "USD",
-      "interest_rate": "4.500%",
-      "maturity": "MISSING",
-      "lead_bank": "MISSING",
-      "source_text": "In September 2024, we completed an underwritten public offering of $600,000 aggregate principal amount of 4.500% Notes due 2029."
-    },
-    {
-      "name": "Senior notes, due 2025",
-      "max_amount": "MISSING",
-      "currency": "USD",
-      "interest_rate": "3.07%",
-      "maturity": "2025",
-      "lead_bank": "MISSING",
-      "source_text": "These unsecured fixed-rate notes entered into in 2012 with a group of insurance companies have a remaining weighted-average life of 0.24 years. The weighted-average interest rate at April 30, 2025 was 3.07%."
-    },
-    {
-      "name": "Senior notes, due 2025-2027",
-      "max_amount": "MISSING",
-      "currency": "USD",
-      "interest_rate": "3.13%",
-      "maturity": "2025-2027",
-      "lead_bank": "MISSING",
-      "source_text": "These unsecured fixed-rate notes entered into in 2015 with a group of insurance companies have a remaining weighted-average life of 1.05 years. The weighted-average interest rate at April 30, 2025 was 3.13%."
-    },
-    {
-      "name": "Senior notes, due 2025-2030",
-      "max_amount": "MISSING",
-      "currency": "USD",
-      "interest_rate": "4.03%",
-      "maturity": "2025-2030",
-      "lead_bank": "MISSING",
-      "source_text": "These unsecured fixed-rate notes entered into in 2018 with a group of insurance companies have a remaining weighted-average life of 2.20 years. The weighted-average interest rate at April 30, 2025 was 4.03%."
+      "source_text": "The following table summarizes the outstanding principal amount and carrying value of the Convertible Notes..."
     }
   ]
 }

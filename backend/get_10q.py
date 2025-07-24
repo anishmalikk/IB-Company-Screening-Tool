@@ -8,27 +8,16 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import os
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 from openai import OpenAI
 from ticker_utils import get_cik_for_ticker
 from sec_edgar_api.EdgarClient import EdgarClient
-from bs4 import Tag
 from dotenv import load_dotenv
-from itertools import islice
-from difflib import SequenceMatcher
 import collections
 
 load_dotenv()
 
 
-TARGET_SECTIONS = {
-    "debt": ["debt", "credit agreement", "credit facilities", "notes payable", "indebtedness", "long-term debt", "term loan", "term facility", "revolving credit facility"],
-    "liquidity": ["liquidity", "capital resources", "financial condition", "liquidity and capital resources"]
-}
 
-def fuzzy_match_score(a, b):
-    return SequenceMatcher(None, a.lower(), b.lower()).ratio()
 
 def is_section_header(line):
     norm = line.strip()
@@ -152,48 +141,7 @@ def extract_all_relevant_sections(soup, min_len=200, max_len=50000, debug=False,
     return extracted
 
 
-def extract_clean_sections(soup: BeautifulSoup, min_len=300, max_len=10000, debug=False, debug_log=None):
-    text = soup.get_text(separator="\n", strip=True)
-    lines = text.splitlines()
-    section_headers = []
-    for i, line in enumerate(lines):
-        if i < len(lines) * 0.1:  # ignore first 10% of document (cover, TOC, etc.)
-            continue
-        if is_section_header(line):
-            section_headers.append((i, line.strip()))
-    selected_sections = {}
-    FUZZY_THRESHOLD = 0.7
-    for target, keywords in TARGET_SECTIONS.items():
-        matches = []
-        for idx, heading in section_headers:
-            for kw in keywords:
-                score = fuzzy_match_score(heading.lower(), kw.lower())
-                if kw in heading.lower():
-                    score += 0.5  # exact boost
-                if score >= FUZZY_THRESHOLD:
-                    matches.append((idx, heading, score, kw))
-        # Sort matches by their position in the document
-        matches = sorted(matches, key=lambda x: x[0])
-        if debug and matches:
-            msg = f"Matched sections for '{target}':"
-            if debug_log is not None:
-                debug_log.append(msg)
-            else:
-                print(msg)
-            for idx, heading, score, kw in matches:
-                msg = f"  - '{heading}' (score={score:.2f}, keyword='{kw}') at line {idx}"
-                if debug_log is not None:
-                    debug_log.append(msg)
-                else:
-                    print(msg)
-        # Extract all matched sections
-        for i, (idx, header, score, kw) in enumerate(matches):
-            next_idx = matches[i+1][0] if i+1 < len(matches) else len(lines)
-            content = "\n".join(lines[idx+1:next_idx])
-            if len(content) >= min_len:
-                key = f"{target}_{i+1}" if len(matches) > 1 else target
-                selected_sections[key] = f"=== {header} (score={score:.2f}, keyword='{kw}') ===\n{content[:max_len]}"
-    return selected_sections
+
 
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -215,190 +163,14 @@ def get_latest_10q_link_for_ticker(ticker: str) -> str:
             return filing_url
     return ""
 
-def safe_slice(val, n=500):
-    s = str(val) if val is not None else ""
-    return s[:n]
 
-def extract_recent_facility_lines(text):
-    # Look for lines with 'as of' or 'at' and facility keywords
-    lines = text.splitlines()
-    recent_lines = []
-    facility_keywords = [
-        'Term Facility', 'Revolving Credit Facility', 'Credit Facility', 'Term Loan', 'Revolver', 'Facility', 'Debt', 'Borrowings'
-    ]
-    date_pattern = r'(as of|at) [A-Z][a-z]+ \d{1,2}, \d{4}'
-    for line in lines:
-        if any(kw in line for kw in facility_keywords) and re.search(date_pattern, line):
-            recent_lines.append(line.strip())
-        # Also catch lines like 'At May 31, 2025, the outstanding balance of the Term Facility was $250.0 million.'
-        elif re.search(r'outstanding balance of .*Facility.* (?:was|is) \$[\d,.]+', line):
-            recent_lines.append(line.strip())
-    return recent_lines
 
-def get_laymanized_debt_liquidity(tenq_url: str, debug=False):
-    """
-    Given a 10-Q URL, fetch and parse the HTML, extract the text, and use the LLM to extract and list each credit facility or note in the specified format, in one step.
-    Returns the LLM's output as a string.
-    """
-    debug_log = [] if debug else None
-    try:
-        if debug:
-            msg = f"Fetching 10-Q from URL: {tenq_url}"
-            print(msg)
-            if debug_log is not None:
-                debug_log.append(msg)
-        response = requests.get(tenq_url, headers={"User-Agent": "Company Screener Tool contact@companyscreenertool.com"})
-        response.raise_for_status()
-        soup = BeautifulSoup(response.content, "html.parser")
-        for script in soup(["script", "style"]):
-            script.decompose()
-        # Use improved section extraction
-        sections = extract_clean_sections(soup, debug=debug, debug_log=debug_log)
-        if sections:
-            relevant_text = "\n\n".join(sections.values())
-            if debug:
-                msg = "\n=== Extracted Relevant Sections ===\n"
-                print(msg)
-                print(relevant_text)
-                if debug_log is not None:
-                    debug_log.append(msg)
-                    debug_log.append(relevant_text)
-        else:
-            # Fallback: use first 120,000 chars
-            text = soup.get_text(separator="\n", strip=True)
-            relevant_text = text[:120000]
-            if debug:
-                msg = "No relevant sections found, using fallback text."
-                print(msg)
-                if debug_log is not None:
-                    debug_log.append(msg)
-        # Extract most recent facility lines
-        recent_lines = extract_recent_facility_lines(relevant_text)
-        if debug and recent_lines:
-            msg = "\n=== Most Recent Facility Lines (for LLM context) ===\n"
-            print(msg)
-            if debug_log is not None:
-                debug_log.append(msg)
-            for l in recent_lines:
-                print(l)
-                if debug_log is not None:
-                    debug_log.append(l)
-        # Remove any context about 'most recent value' or 'current balance' and focus on full facility size
-        context = ""
-        prompt = (
-            'Below are the "Debt" and "Liquidity and Capital Resources" sections from a company 10-Q.\n'
-            'Your ONLY task is to extract and list each credit facility or note in the following format, one per line:\n'
-            'facility amount facility name @ (interest rate) mat. mm/yyyy (Lead Bank)\n'
-            '\n'
-            'Instructions:\n'
-            '- Use the **official, full facility name** as written in the 10-Q, not a generic or invented name.\n'
-            '- ALWAYS use the **MAXIMIM FACILITY SIZE** or availability (NOT THE CURRENT OUTSTANDING/BORROWED AMOUNT). This is extremely important.\n'
-            '- If the facility name is long, abbreviate only if the abbreviation is used in the 10-Q.\n'
-            '- If the 10-Q provides a table, use the names and amounts from the table, not from narrative summaries (if they are complete facility amounts, not usage or debt owed).\n'
-            '- If both committed and outstanding amounts are present, always prefer the committed/maximum size.\n'
-            '- Use updated information from the newest credit agreements. If a facility amount was updated in a recent amendment, use the updated amount. Again, give the full facility amount, not the current usage or debt owed.\n'
-            '- If the lead bank is not specified, omit the parentheses.\n'
-            '- Use bps when describing interest rates. Most interest rates have a spread, try to use SOFR or LIBOR + x-y bps where possible.\n'
-            '- If a field is missing, put "unknown" or skip it where appropriate, but do not guess or invent any information.\n'
-            '- Do not combine or split facilities unless the 10-Q does so.\n'
-            '- Look for information about: notes owed, revolvers, term loans, senior notes, credit agreements, borrowing capacity, and availability.\n'
-            '- Your output should be organized from facilities coming due first to those coming due last.\n'
-            '- Do NOT include any other information, bullets, or narrative.\n'
-            'Examples:\n'
-            '$350M HF-T1 Distribution Center Loan @ SOFR + 120 -185 bps mat. 3/2026 (BofA)\n'
-            '$75M HF-T2 Distribuition Center Construction Loan @ SOFR + 40 - 185 bps mat. 4/2026 (JPM)\n'
-            '$250M Revolving Credit Facility @ SOFR + 100–150 bps mat. 12/2026 (PNC)\n'
-            '$130.8M China Operational Loans @ 2.00–2.60% mat. var. 2026 (BofChina)\n'
-            '$1B China DC Expansion Loan @ 2.70%  mat. 12/2032 (BofChina)\n\n'
-            '- Do NOT summarize liquidity, cash, or other financials. Only output the facilities in the format above.\n'
-            '\n'
-            'IMPORTANT: If the interest rate is described as \'SOFR plus 2.00%\', always convert the spread to basis points (e.g., 2.00% = 200 bps) and output as \'SOFR + 200 bps\'. Never use percent for the spread in your output.\n'
-            'Examples:\n'
-            "- If the 10-Q says 'SOFR plus 2.00%', output 'SOFR + 200 bps'\n"
-            "- If the 10-Q says 'LIBOR plus 1.75%', output 'LIBOR + 175 bps'\n\n"
-            'For notes (not facilities), use the following format:\n'
-            'note name @ (interest rate) mat. mm/yyyy\n'
-            'Examples:\n'
-            '- $50M 2.60% Senior Notes – mat. 3/2027 \n'
-            '- $100M 2.90% Senior Notes, Series B – mat. 7/2026 \n\n'
-            '---\n'
-            f"10-Q Text (extracted):\n{relevant_text}"
-            "If the 10-Q lacks details, use reliable information from the 10-K to fill gaps, but do not make up any information. Ensure all output is concise and follows the specified formats."
-        )
-        try:
-            response = llm_client.chat.completions.create(
-                model=MODEL_NAME,
-                messages=[
-                    {"role": "system", "content": (
-                        "You are a precise financial document extractor. "
-                        "You always extract the maximum committed amount (not the current outstanding or historical amounts) for each facility, "
-                        "deduplicate amendments, and output only the current total facility size. "
-                        "You always convert interest rate spreads to basis points (bps) unless they are notes, and follow all formatting instructions exactly."
-                    )},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            llm_output = response.choices[0].message.content.strip() if response.choices and response.choices[0].message and response.choices[0].message.content else ""
-        except Exception as e:
-            if debug:
-                msg = f"Error processing with LLM: {e}"
-                print(msg)
-                if debug_log is not None:
-                    debug_log.append(msg)
-            llm_output = "Error processing with LLM."
-        if debug:
-            msg = "=== LLM OUTPUT ==="
-            print(msg)
-            print(safe_slice(llm_output, 1000))
-            if debug_log is not None:
-                debug_log.append(msg)
-                debug_log.append(safe_slice(llm_output, 1000))
-        # Write debug log to file if enabled
-        if debug_log is not None:
-            try:
-                with open("debug_output.txt", "w", encoding="utf-8") as f:
-                    if debug_log:
-                        for entry in debug_log:
-                            f.write(entry + "\n")
-            except Exception as file_err:
-                print(f"Failed to write debug log: {file_err}")
-        return llm_output
-    except Exception as e:
-        if debug:
-            msg = f"Error in get_laymanized_debt_liquidity: {e}"
-            print(msg)
-            if debug_log is not None:
-                debug_log.append(msg)
-            # Write debug log to file if enabled
-            try:
-                with open("debug_output.txt", "w", encoding="utf-8") as f:
-                    if debug_log:
-                        for entry in debug_log:
-                            f.write(entry + "\n")
-            except Exception as file_err:
-                print(f"Failed to write debug log: {file_err}")
-        return "Error in get_laymanized_debt_liquidity."
 
-def test_section_extraction(ticker, output_file="section_extraction_test.txt"):
-    """
-    Fetch the latest 10-Q for the given ticker, extract all relevant sections, and write them to a file.
-    """
-    link = get_latest_10q_link_for_ticker(ticker)
-    if not link:
-        print(f"No 10-Q link found for ticker {ticker}.")
-        return
-    print(f"Testing section extraction for ticker: {ticker}")
-    print(f"10-Q link: {link}")
-    response = requests.get(link, headers={"User-Agent": "Company Screener Tool contact@companyscreenertool.com"})
-    response.raise_for_status()
-    soup = BeautifulSoup(response.content, "html.parser")
-    extracted = extract_all_relevant_sections(soup, debug=True)
-    with open(output_file, "w", encoding="utf-8") as f:
-        for header, content in extracted.items():
-            f.write(f"\n==== {header} ====" + "\n")
-            f.write(content if isinstance(content, str) else str(content))
-            f.write("\n\n")
-    print(f"Extracted sections written to {output_file}")
+
+
+
+
+
 
 def extract_facilities_robust(extracted_sections, llm_client, model_name, debug=False, output_file=None):
     """
@@ -434,7 +206,7 @@ def extract_facilities_robust(extracted_sections, llm_client, model_name, debug=
         print("🔄 Falling back to filtered content due to token limits...")
     
     # AGGRESSIVE CONTENT FILTERING (FALLBACK)
-    def filter_relevant_content(sections, max_chars=80000):
+    def filter_relevant_content(sections, max_chars=90000):
         """Filter sections aggressively to stay within token limits"""
         scored_sections = []
         
@@ -559,7 +331,7 @@ CONTEXT: This is {content_type} from the 10-Q filing.
 STEP-BY-STEP APPROACH:
 1. Scan for credit agreements, facilities, loans, or notes
 2. Identify EXACT facility names as mentioned in the document
-3. Find MAXIMUM facility size (look for "up to $X million", "commitment of $X")
+3. Find MAXIMUM facility size (look for "up to $X million", "commitment of $X", "facility size of $X")
 4. Extract interest rate information
 5. Find maturity dates
 6. Identify lead banks/lenders
@@ -567,9 +339,14 @@ STEP-BY-STEP APPROACH:
 8. CRITICAL: Look for senior notes, convertible notes, and any debt securities
 9. CRITICAL: Ensure all facilities from the same credit agreement share the same lead bank
 10. CRITICAL: Look for interest rate details in the same paragraph/section as facility descriptions
+11. CRITICAL: If you only see "borrowed $X" or "outstanding $X", use "MISSING" for facility size
+12. CRITICAL: Only use amounts that explicitly state the maximum facility size, not current usage
 
 CRITICAL RULES:
 - Use MAXIMUM FACILITY SIZE, never current outstanding balances
+- CRITICAL: If you see "borrowed $X against the facility", this is USAGE, NOT the facility size - use "MISSING"
+- CRITICAL: If you see "outstanding $X under the facility", this is USAGE, NOT the facility size - use "MISSING"
+- CRITICAL: Only use amounts that explicitly state the maximum/commitment size of the facility
 - If credit agreement mentions "Revolver" AND "Term Loan", create SEPARATE entries
 - Use exact facility names from document
 - If information missing, use "MISSING"
@@ -585,6 +362,12 @@ CRITICAL RULES:
 - CRITICAL: If you find a credit agreement with multiple facilities, ensure they all share the same lead bank
 - CRITICAL: Look for interest rate spreads in basis points (e.g., "SOFR + 112.5-175 bps")
 - CRITICAL: If facilities are described as part of the same credit agreement, they share the same lead bank (e.g., "with a group of banks" applies to both facilities)
+- CRITICAL: Convert amounts to full dollar amounts - if you see "$1,250" in thousands context, convert to "$1,250,000"
+- CRITICAL: Look for table footnotes or context that indicates amounts are in thousands (e.g., "in thousands", "except per share amounts")
+- CRITICAL: For notes and debt, look for the full principal amount, not just partial amounts
+- CRITICAL: NEVER use current outstanding balances as facility amounts - if you only see "outstanding" or "borrowed" amounts, use "MISSING" for max_amount
+- CRITICAL: Look for phrases like "up to $X million", "commitment of $X", "facility size of $X" for maximum amounts
+- CRITICAL: If you see "borrowed $X against the facility", this is USAGE, not the facility size
 
 EXAMPLES:
 - "revolving loans of up to $175.0 million" → Facility: Revolver, Amount: $175.0 million
@@ -599,6 +382,14 @@ EXAMPLES:
 - "5.600% Notes due 2028" → Note Name: 5.600% Notes due 2028 (use exact name)
 - "The New Credit Agreement provides that the applicable margin...0.85% to 1.20%" → This applies to BOTH Term Loan Facility AND Revolving Facility under the same agreement
 - "we entered into a $1,150,000 credit facility...which provides for a term loan...and a revolving credit facility" → Both facilities share the same interest rate structure
+- "$1,250" in thousands context → Amount: $1,250,000 (convert to full amount)
+- "$3,800" in thousands context → Amount: $3,800,000 (convert to full amount)
+- "Note Payable due 2026" with amount in thousands → Look for full principal amount in nearby text
+- "borrowed $750.0 million against the delayed draw term facility" → Amount: MISSING (this is usage, not facility size)
+- "$1.6 billion of borrowings outstanding under its credit facility" → Amount: MISSING (this is outstanding, not facility size)
+- "Remaining borrowing capacity under this facility was $2.7 billion" → Amount: MISSING (this is remaining, not total facility size)
+- "the company borrowed $750.0 million against the delayed draw term facility" → Amount: MISSING (this is what they borrowed, not the facility size)
+- "outstanding under the delayed draw term loan" → Amount: MISSING (this is current outstanding, not facility size)
 
 AVOID:
 - "outstanding on" amounts (current balances)
@@ -609,6 +400,10 @@ AVOID:
 - Combining multiple notes into one entry
 - Shortened note names (use full names like "4.500% Notes due 2029")
 - Wrong interest rates (double-check the rate matches the note name)
+- Current outstanding balances as facility amounts
+- "borrowed $X against the facility" amounts (this is usage, not facility size)
+- "remaining borrowing capacity" amounts (this is remaining, not total facility size)
+- Any amounts that are clearly current usage rather than maximum facility size
 
 CONNECTING RELATED FACILITIES:
 - If you see "we entered into a $X credit facility with [specific bank]" followed by multiple facility descriptions, ALL those facilities share the same interest rate structure
@@ -655,7 +450,7 @@ Document text:
         response = llm_client.chat.completions.create(
             model=model_name,
             messages=[
-                {"role": "system", "content": "You are a precise financial document analyzer. Extract credit facilities and notes in JSON format. Be thorough and include ALL facilities/notes mentioned."},
+                {"role": "system", "content": "You are a precise financial document analyzer. Extract credit facilities and notes in JSON format. Be thorough and include ALL facilities/notes mentioned. CRITICAL: Never use current usage amounts (like 'borrowed $X' or 'outstanding $X') as facility sizes - use 'MISSING' instead."},
                 {"role": "user", "content": prompt}
             ]
         )
@@ -689,36 +484,19 @@ def test_facilities_json_extraction(ticker, output_json_file="facilities_json_te
     if not link:
         print(f"No 10-Q link found for ticker {ticker}.")
         return
-    print(f"Testing robust facilities extraction for ticker: {ticker}")
-    print(f"10-Q link: {link}")
     response = requests.get(link, headers={"User-Agent": "Company Screener Tool contact@companyscreenertool.com"})
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
-    extracted = extract_all_relevant_sections(soup, debug=True)
-    result = extract_facilities_robust(extracted, llm_client, MODEL_NAME, debug=True, output_file=output_llm_file)
+    extracted = extract_all_relevant_sections(soup, debug=False)
+    result = extract_facilities_robust(extracted, llm_client, MODEL_NAME, debug=False, output_file=output_llm_file)
     import json
     with open(output_json_file, "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2)
-    print(f"Facilities JSON written to {output_json_file}")
-    print(f"Raw LLM output written to {output_llm_file}")
 
 #Local testing in IDE:
 if __name__ == "__main__":
     # You can change the ticker here for testing
-    test_ticker = "NDSN"
-    # debug = False
-    # print(f"Testing get_latest_10q_link_for_ticker for ticker: {test_ticker}")
-    # link = get_latest_10q_link_for_ticker(test_ticker)
-    # print(f"Latest 10-Q link: {link}")
-    # if link:
-    #     print("\nLaymanized Debt/Liquidity Summary:")
-    #     summary = get_laymanized_debt_liquidity(link, debug=debug)
-    #     if not debug:
-    #         print(summary)
-    # else:
-    #     print("No 10-Q link found.")
-
-    # Usage for local testing (specifically to test the section extraction algorithm):
-    test_section_extraction(test_ticker)
+    test_ticker = "MIDD"
+    
     # Usage for local testing (to test the JSON extraction):
     test_facilities_json_extraction(test_ticker)
