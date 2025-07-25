@@ -1,0 +1,69 @@
+{
+  "facilities": [
+    {
+      "name": "2024 Revolving Credit Agreement",
+      "max_amount": "900,000,000",
+      "currency": "USD",
+      "interest_rate": "0.36%",
+      "maturity": "not explicitly specified, but details indicate it is a revolving facility with ongoing availability",
+      "lead_bank": "not explicitly specified in the excerpt",
+      "source_text": "As of March 31, 2025, the Company has a revolving credit facility that provides for up to $900.0 million of backup liquidity to finance working capital needs, refinance or reduce existing indebtedness, and for general corporate use. In addition, the facility provides for an uncommitted incremental facility whereby, under certain circumstances, the Company may, at its option, increase the amount of the revolving facility or incur term loans in an aggregate amount not to exceed $400 million. As of March 31, 2025, the Company was in compliance with all covenants of its debt agreements."
+    },
+    {
+      "name": "CHF Loan due 2027",
+      "max_amount": "165.3 million CHF",
+      "currency": "CHF",
+      "interest_rate": "not explicitly specified, but likely fixed or variable based on CHF terms",
+      "maturity": "2027",
+      "lead_bank": "not explicitly specified",
+      "source_text": "CHF loan due 2027: $165.3 million; as of March 31, 2025, this amount is recorded as part of total debt. The note details indicate it is a loan under the company's debt obligations, with a maturity in 2027."
+    },
+    {
+      "name": "CHF Loan due 2029",
+      "max_amount": "165.3 million CHF",
+      "currency": "CHF",
+      "interest_rate": "not explicitly specified",
+      "maturity": "2029",
+      "lead_bank": "not explicitly specified",
+      "source_text": "CHF loan due 2029: $165.3 million; as of March 31, 2025, this amount is recorded as part of total debt. The details indicate it is a debt obligation maturing in 2029."
+    },
+    {
+      "name": "CHF Loan due 2031",
+      "max_amount": "169.5 million CHF",
+      "currency": "CHF",
+      "interest_rate": "not explicitly specified",
+      "maturity": "2031",
+      "lead_bank": "not explicitly specified",
+      "source_text": "CHF loan due 2031 (a): $169.5 million; this debt obligation is documented as part of long-term debt with a maturity in 2031, indicating its ongoing active status."
+    },
+    {
+      "name": "2019 Term Loan Agreement",
+      "max_amount": "259.5 million USD",
+      "currency": "USD",
+      "interest_rate": "not explicitly specified, but likely variable or fixed based on agreement terms",
+      "maturity": "December 2026",
+      "lead_bank": "not explicitly specified",
+      "source_text": "2019 term loan agreement: USD loan quarterly payments of $3.8 million and balloon payment due December 2026; as of March 31, 2025, outstanding debt recorded as $259.5 million suggests this is an active, in-force facility."
+    }
+  ],
+  "notes": [
+    {
+      "name": "Note Purchase Agreements (NPA) - 2024 Notes",
+      "max_amount": "CHF 50 million + CHF 50 million + CHF 135 million + CHF 300 million + EUR 150 million",
+      "currency": "CHF and EUR",
+      "interest_rate": "varies by issue, e.g., 2.56%, 2.62%, 2.71%, 0.88%, 1.03%",
+      "maturity": "various, including 2034, 2036, 2039, 2031",
+      "lead_bank": "not explicitly specified",
+      "source_text": "Note Purchase Agreements (NPA \u2013 Senior notes): 2024 notes due April 15, 2034; CHF 50 million at 2.56%, 2024 notes due 2036 at 2.62%, CHF 135 million at 2.71%, etc., totaling over $2 billion of outstanding notes, indicating these are active debt securities."
+    },
+    {
+      "name": "Long-term debt",
+      "max_amount": "2,095.7 million USD",
+      "currency": "USD",
+      "interest_rate": "not explicitly specified but includes fixed and variable components, e.g., 2.56%, 2.62%, 2.71%, etc.",
+      "maturity": "various, some up to December 2039",
+      "lead_bank": "not explicitly specified",
+      "source_text": "Total notes and loans outstanding: $2,095.7 million; includes various bond and loan instruments such as CHF and EUR notes with maturities up to 2039, indicating they are active and in force."
+    }
+  ]
+}
