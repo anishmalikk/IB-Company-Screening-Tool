@@ -1,68 +1,32 @@
-Layman's Terms Debt Analysis for BRKR (Pre-Verification)
+Layman's Terms Debt Analysis for OUT (Pre-Verification)
 ============================================================
 
-$900M Revolving Credit Facility @ MISSING - CHECK CREDIT AGREEMENT mat. MARCH 31, 2025 (MISSING)  
-- Total commitments: $900 million  
-- Outstanding borrowings: $0 million  
-- Letters of credit: $0.3 million  
-- Total available: $899.7 million  
-- Lead bank: MISSING  
+$399.6M Term Loan @ 6.1% mat. 12/2026 (MISSING - CHECK CREDIT AGREEMENT)  
+- Due in 2026  
+- As of March 31, 2025, outstanding balance: $399.6 million  
+- Interest rate: 6.1% per annum  
+- Check credit agreement for additional details  
 
-$173.4M Lines of Credit (primarily in Germany and Switzerland) @ MISSING - CHECK CREDIT AGREEMENT mat. N/A (due upon demand)  
-- Total commitments: $173.4 million  
-- Outstanding borrowings: $0 million  
-- Lead bank: MISSING  
+$150.0M Accounts Receivable Securitization Facility @ 5.6% mat. 6/2027 (MISSING - CHECK CREDIT AGREEMENT)  
+- Due in June 2027, unless extended  
+- Outstanding borrowings: $50.0 million as of March 31, 2025  
+- Remaining capacity: $100.0 million (based on receivables collateral)  
+- Borrowing rate: 5.6%  
+- Check credit agreement for additional details  
 
-$259.5M USD Term Loan @ MISSING - CHECK CREDIT AGREEMENT mat. 12/2026 (MISSING)  
-- Outstanding amount: $259.5 million  
-- Interest rate: MISSING  
+$500.0M Revolving Credit Facility @ (interest rate) mat. 2028 (MISSING - CHECK CREDIT AGREEMENT)  
+- Matures in 2028  
+- As of March 31, 2025, no borrowings outstanding  
+- Issued letters of credit: approximately $5.2 million  
+- Unused commitments: full $500 million available  
+- Commitment fee: $0.5 million per quarter on unused amount  
+- Check credit agreement for additional details  
 
-$165.3M CHF Notes due 2027 @ 2.56% mat. 2027 (MISSING)  
-- Amount: $165.3 million  
-- Interest rate: 2.56%  
-- Maturity: 2027  
+$64.7M Letters of Credit @ N/A (immaterial fees) mat. MISSING (implied ongoing)  
+- Issued under standalone letter of credit facilities  
+- Total letters of credit issued: approximately $64.7 million  
+- Maturity date not explicitly stated  
 
-$165.3M CHF Notes due 2029 @ 2.62% mat. 2029 (MISSING)  
-- Amount: $165.3 million  
-- Interest rate: 2.62%  
-- Maturity: 2029  
-
-$169.5M CHF Notes due 2031 @ 2.71% mat. 2031 (MISSING)  
-- Amount: $169.5 million  
-- Interest rate: 2.71%  
-- Maturity: 2031  
-
-$339.1M CHF Notes due 2031 @ 0.88% mat. 2031 (MISSING)  
-- Amount: $339.1 million  
-- Interest rate: 0.88%  
-- Maturity: 2031  
-
-$56.5M CHF Notes due 2034 @ 2.56% mat. 4/2034 (MISSING)  
-- Amount: $56.5 million  
-- Interest rate: 2.56%  
-- Maturity: 4/2034  
-
-$221.5M CHF Notes due 2036 @ 2.62% (CHF 146M at 2.62%) mat. 2036 (MISSING)  
-- Total amount: $221.5 million (CHF 146 million)  
-- Interest rate: 2.62%  
-- Maturity: 2036  
-
-$209.1M CHF Notes due 2039 @ 2.71% (CHF 135M at 2.71%) mat. 2039 (MISSING)  
-- Total amount: $209.1 million (CHF 135 million)  
-- Interest rate: 2.71%  
-- Maturity: 2039  
-
-$162.2M EUR Notes due 2031 @ 1.03% (EUR 150M) mat. 2031 (MISSING)  
-- Amount: $162.2 million (EUR 150 million)  
-- Interest rate: 1.03%  
-- Maturity: 2031  
-
-$14.9M USD Other Loans @ MISSING - CHECK CREDIT AGREEMENT mat. MISSING  
-- Outstanding amount: $14.9 million  
-
-$335.7M CHF Notes due 2029 @ 1.01% (MISSING)  
-- Amount: $335.7 million  
-- Interest rate: 1.01%  
-- Maturity: 2029  
-
-**Note:** All amounts are in original currencies; USD equivalents are provided for context. MISSING indicates data not explicitly provided in the sections.
+**Note:**  
+- No other debt facilities are explicitly documented in the provided sections.  
+- All facilities are supported by references to the credit agreements and debt tables for detailed terms.

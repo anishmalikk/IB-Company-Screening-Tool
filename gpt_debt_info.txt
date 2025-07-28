@@ -1,323 +1,333 @@
-Debt-Related Text Extraction for BRKR
+Debt-Related Text Extraction for OUT
 ============================================================
 
-**Revolving Credit Facilities:**
+**Revolving Credit Facility (USD)**  
+- Facility Type: Revolving Credit Facility  
+- Amount: $500,000,000 (USD)  
+- Interest Rate: MISSING (not explicitly stated)  
+- Maturity Date: 2028 (the “Revolving Credit Facility”)  
+- Lead Bank/Lender: MISSING (not explicitly stated)  
+- Source: Section 27 and Section 28 (also supported by debt tables and narrative references)  
 
-- **2024 Amended and Restated Credit Agreement (Revolving Credit Facility)**
-  - Total Commitments: **$900.0 million**
-  - Outstanding Borrowings (as of March 31, 2025): **$0.0 million**
-  - Letters of Credit Outstanding: **$0.3 million**
-  - Total Available: **$899.7 million**
-  - Weighted Average Interest Rate: **0.36%**
-  - Maturity Date: **March 31, 2025**
-  - Lead Bank/Lender: **MISSING**
+**Term Loan (USD)**  
+- Facility Type: Term Loan (due 2026)  
+- Amount: $399,600,000 (USD) as of March 31, 2025  
+- Interest Rate: 6.1% per annum (as of March 31, 2025)  
+- Maturity Date: 2026 (due date)  
+- Lead Bank/Lender: MISSING (not explicitly stated)  
+- Source: Sections 27, 28, and supporting debt tables (notably the long-term debt table and narrative references)  
 
-- **Other Lines of Credit (primarily in Germany and Switzerland)**
-  - Total Commitments: **$173.4 million**
-  - Outstanding Borrowings: **$0.0 million**
-  - Outstanding Letters of Credit: **N/A**
-  - Total Available: **$173.4 million**
-  - Variably priced (interest rate: Varies)
-  - Maturity Date: **N/A (due upon demand)**
-  - Lead Bank/Lender: **MISSING**
+**Accounts Receivable Securitization Facility (USD)**  
+- Facility Type: Accounts Receivable Securitization Facility (AR Facility)  
+- Amount: $150,000,000 (USD)  
+- Interest Rate: 5.6% (as of March 31, 2025)  
+- Maturity Date: June 2027 (unless extended)  
+- Lead Bank/Lender: MISSING (not explicitly stated)  
+- Source: Sections 27, 28, and supporting debt tables  
 
-- **Total Revolving Lines of Credit (including the above)**
-  - Total Commitments: **$1,073.4 million**
-  - Outstanding Borrowings: **$0.0 million**
-  - Outstanding Letters of Credit: **$173.7 million**
-  - Total Available: **$899.7 million**
+**Letters of Credit (USD)**  
+- Facility Type: Standalone Letter of Credit Facilities  
+- Amount: Issued letters of credit totaling approximately $64.7 million (USD) under an aggregate $81.0 million (USD) facility  
+- Interest Rate: N/A (fees are immaterial)  
+- Maturity Date: Not explicitly stated (implied ongoing, supported by issuance data)  
+- Lead Bank/Lender: MISSING (not explicitly stated)  
+- Source: Sections 27, 28, and supporting debt tables  
 
----
-
-**Term Loans and Notes:**
-
-- **2019 Term Loan Agreement (USD)**
-  - Outstanding Amount (as of March 31, 2025): **$259.5 million**
-  - Maturity Date: **December 2026**
-  - Interest Rate: **MISSING** (not explicitly stated)
-  - Lead Bank/Lender: **MISSING**
-
-- **CHF Notes under the 2024 Term Loan Agreement (Multiple tranches):**
-  - Due 2027: **$165.3 million**
-  - Due 2029: **$165.3 million**
-  - Due 2031: **$169.5 million**
-  - Maturities: **2027, 2029, 2031**
-  - Interest Rates: **2.56%, 2.62%, 2.71% (CHF notes), 2.60%, 2.62% (CHF notes)**
-  - Lead Bank/Lender: **MISSING**
-
-- **Notes Purchase Agreements (Senior Notes):**
-  - **2024 Notes due April 15, 2034 (CHF):** **$56.5 million** at 2.56%
-  - **2024 Notes due April 15, 2036 (CHF):** **$221.5 million** (CHF 146 million at 2.62%, CHF 50 million at 2.60%)
-  - **2024 Notes due April 15, 2039 (CHF):** **$209.1 million** (CHF 135 million at 2.71%, CHF 50 million at 2.62%)
-  - **2021 Notes due December 8, 2031 (CHF):** **$339.1 million** at 0.88%
-  - **2019 Notes due December 11, 2029 (CHF):** **$335.7 million** at 1.01%
-  - **2021 Notes due December 8, 2031 (EUR):** **$162.2 million** (EUR 150 million at 1.03%)
-
-- **Other Loans:**
-  - **In U.S. Dollars (as of March 31, 2025):** **$14.9 million**
-  - Outstanding as of December 31, 2024: **$11.9 million**
-
-- **Total Notes and Loans Outstanding:**
-  - **$2,095.7 million** (March 31, 2025)
-  - **$2,076.8 million** (December 31, 2024)
-
-- **Finance Lease Obligations:**
-  - **$18.1 million** (March 31, 2025)
-  - **$17.5 million** (December 31, 2024)
-
-- **Total Debt (including notes, loans, leases):**
-  - **$2,113.8 million** (March 31, 2025)
-  - **$2,094.3 million** (December 31, 2024)
-
----
-
-**Additional Notes:**
-
-- The **2024 Revolving Credit Agreement** is the primary USD revolving facility, with a maximum commitment of **$900 million** and net outstanding borrowings of **$0** as of March 31, 2025.
-- The **CHF notes** are documented as part of the 2024 Term Loan Agreement and various senior notes, with explicit amounts, maturities, and interest rates.
-- The **2019 Term Loan** is documented with quarterly payments and a balloon payment due December 2026.
-- The **Senior Notes** are detailed with amounts, currencies, maturity dates, and fixed interest rates.
-- The **Total outstanding debt** includes all these facilities, with explicit amounts and maturities provided.
-
-**Note:** All amounts are in USD unless otherwise specified. MISSING indicates data not explicitly provided in the sections.
+**Additional Notes:**  
+- The main USD revolving and term loan facilities are documented in the "Revolving Credit Facility" and "Term Loan" sections, supported by debt tables and narrative references.  
+- The AR Facility and Letters of Credit are also explicitly documented with amounts, maturities, and rates.  
+- No other debt facilities (e.g., senior notes, other credit lines) are explicitly documented in the provided sections for extraction.
 
 ============================================================
 
 CREDIT FACILITIES SECTION (KEY REVOLVER/TERM LOAN INFO):
 
-Credit Facilities
-As of March 31, 2025, we have total outstanding debt of $2.1 billion and a revolving credit facility that provides for up to $900.0 million of backup liquidity to finance working capital needs, refinance or reduce existing indebtedness, and for general corporate use. In addition, the facility provides for an uncommitted incremental facility whereby, under certain circumstances, we may, at our option, increase the amount of the revolving facility or incur term loans in an aggregate amount not to exceed $400 million. As of March 31, 2025, we
-were in compliance with all covenants of our debt agreements.
-For a summary of the fair and carrying values of our outstanding debt as of March 31, 2025, and December 31, 2024, refer to
-Note 15, Debt and Note 16, Fair Value of Financial Instruments
-to our unaudited condensed consolidated financial statements included in this report. For additional information on our outstanding debt and credit facility refer to
-Note 21 Debt
-, to our unaudited condensed consolidated financial statements included in our Annual Report on Form 10-K for the year ended December 31, 2024.
-37
+Credit Facilities”).
+As of March 31, 2025, there were
+no
+outstanding borrowings under the Revolving Credit Facility.
+The commitment fee based on the amount of unused commitments under the Revolving Credit Facility was $
+0.5
+million in each of the three months ended March 31, 2025, and 2024. As of March 31, 2025, we had issued letters of credit totaling approximately $
+5.2
+million against the letter of credit facility sublimit under the Revolving Credit Facility.
+Standalone Letter of Credit Facilities
+As of March 31, 2025, we had issued letters of credit totaling approximately $
+64.7
+million under our aggregate $
+81.0
+million standalone letter of credit facilities. The total fees under the letter of credit facilities were immaterial in each of the three months ended March 31, 2025 and 2024.
+Accounts Receivable Securitization Facility
+As of March 31, 2025, we have a $
+150.0
+million revolving accounts receivable securitization facility (the “AR Facility”), which terminates in June 2027, unless further extended.
+In connection with the AR Facility, Outfront Media LLC and Outfront Media Outernet Inc., each a wholly-owned subsidiary of the Company, and certain of the Company’s taxable REIT subsidiaries (“TRSs”) (the “Originators”), will sell and/or contribute their respective existing and future accounts receivable and certain related assets to either Outfront Media Receivables LLC, a special purpose vehicle and wholly-owned subsidiary of the Company relating to the Company’s qualified REIT subsidiary accounts receivable assets (the “QRS SPV”) or Outfront Media Receivables TRS, LLC a special purpose vehicle and wholly-owned subsidiary of the Company relating to the Company’s TRS accounts receivable assets (the “TRS SPV” and together with the QRS SPV, the “SPVs”). The SPVs may transfer undivided interests in their respective accounts receivable assets to certain purchasers from time to time (the “Purchasers”). The SPVs are separate legal entities with their own separate creditors who will be entitled to access the SPVs’ assets before the assets become available to the Company. Accordingly, the SPVs’ assets are not available to pay creditors of the Company or any of its subsidiaries, although collections from the receivables in excess of amounts required to repay the Purchasers and other creditors of the SPVs may be remitted to the Company. Outfront Media LLC will service the accounts receivables on behalf of the SPVs for a fee. The Company has agreed to guarantee the performance of the Originators and Outfront Media LLC, in its capacity as servicer, of their respective obligations under the agreements governing the AR Facility. Neither the Company, the Originators nor the SPVs guarantee the collectability of the receivables under the AR Facility. Further, the TRS SPV and the QRS SPV are jointly and severally liable for their respective obligations under the agreements governing the AR Facility.
+As of March 31, 2025, there were $
+50.0
+million of outstanding borrowings under the AR Facility, at a borrowing rate of
+5.6
+%. As of March 31, 2025, borrowing capacity remaining under the AR Facility was $
+100.0
+million based on approximately $
+312.9
+million of accounts receivable that could be used as collateral for the AR Facility in accordance with the agreements governing the AR Facility. The commitment fee based on the amount of unused commitments under the AR Facility was $
+0.1
+million in each of the three months ended March 31, 2025 and 2024. In April 2025, we made a repayment of $
+10.0
+million under the AR Facility.
+Debt Covenants
+Our credit agreement, dated as of January 31, 2014 (as amended, restated, amended and restated, supplemented or otherwise modified, the “Credit Agreement”), governing the Senior Credit Facilities, the agreements governing the AR Facility, and the indentures governing our senior notes contain customary affirmative and negative covenants, subject to certain exceptions,
+14
 Table of Contents
-CRITICAL ACCOUNTING POLICIES AND ESTIMATES
-There have been no material changes to our critical accounting policies and estimates since December 31, 2024. Refer to our Annual Report on Form 10-K for the year ended December 31, 2024 for a discussion of our critical accounting policies.
-RECENT ACCOUNTING PRONOUNCEMENTS
-Information regarding recent accounting standard changes and developments is incorporated by reference from Part I, Item 1, Unaudited Condensed Consolidated Financial Statements, of this document and should be considered an integral part of this Item 2. Refer to
-Note 2, Recent Accounting Pronouncements
-in the Notes to the Unaudited Condensed Consolidated Financial Statements in this Quarterly Report on Form 10-Q for recently adopted and issued accounting standards.
-ITEM 3.
-QUANTITATIVE AND QUALITATIVE DISCLOSURES
-ABOUT MARKET RISK
-Information concerning market risk is contained in Item 7A “Quantitative and Qualitative Disclosures About Market Risk” in our Annual Report on Form 10-K for the year ended December 31, 2024. As of March 31, 2025, there were no material changes in our exposure to market risk from December 31, 2024 other than the following:
-Tariff Risks
-During the first quarter of 2025, various tariffs were announced on imports into the U.S. On April 2, 2025, the U.S. announced a new universal baseline tariff of 10%, plus significant additional country-specific tariffs for select trading partners, on all U.S. imports. The reciprocal country-specific tariffs were subsequently paused for 90 days on most countries. The imposition of the baseline 10% tariff will increase our costs of goods sold. We are conducting an internal review and are assessing how the increased reciprocal tariffs may affect operating profitability, business operations, and strategies to mitigate potential cost increases.
-ITEM 4.
-CONTROLS AND PROCEDURES
-We have established disclosure controls and procedures (as defined in Rules 13a-15(e) and 15d-15(e) under the Securities Exchange Act of 1934, as amended (Exchange Act)) that are designed to ensure that material information relating to us, including our consolidated subsidiaries, is made known to our Chief Executive Officer (principal executive officer) and Chief Financial Officer (principal financial officer) by others within our organization. Under the supervision and with the participation of our management, including our Chief Executive Officer and Chief Financial Officer, we conducted an evaluation of the effectiveness of our disclosure controls and procedures as of March 31, 2025. Based on this evaluation, our Chief Executive Officer and Chief Financial Officer have concluded that our disclosure controls and procedures were effective as of March 31, 2025.
-Management concluded that the unaudited condensed consolidated financial statements contained in this Quarterly Report on Form 10-Q fairly state, in all material respects, our financial condition, results of operations and cash flows for the periods presented in conformity with GAAP.
-Changes in Internal Controls over Financial Reporting
-There have been no changes in our internal control over financial reporting during the three months ended March 31, 2025, that have materially affected, or are reasonably likely to materially affect, our internal control over financial reporting.
-38
-Table of Contents
-PART II OTHER INFORMATION
-ITEM 1.
-LEGAL PROCEEDINGS
-We are involved in lawsuits, claims, and proceedings, including, but not limited to, patent, customer, labor and employment and commercial matters, which arise in the ordinary course of business. As of March 31, 2025, other than as disclosed in
-Note 20, Commitments and Contingencies
-in the Notes to our Unaudited Condensed Consolidated Financial Statements in this Quarterly Report on Form 10-Q, the Company is not party to any materia
+OUTFRONT Media Inc.
+Notes to Consolidated Financial Statements
+(Unaudited)
+including but not limited to those that restrict the Company’s and its subsidiaries’ abilities to (i) pay dividends on, repurchase or make distributions in respect to the Company’s or its wholly-owned subsidiary, Outfront Media Capital LLC’s capital stock or make other restricted payments other than dividends or distributions necessary for us to maintain our REIT status, subject to certain conditions and exceptions, (ii) enter into agreements restricting certain subsidiaries’ ability to pay dividends or make other intercompany or third-party transfers, and (iii) incur additional indebtedness. One of the exceptions to the restriction on our ability to incur additional indebtedness is satisfaction of a Consolidated Total Leverage Ratio, which is the ratio of our consolidated total debt to our Consolidated EBITDA (as defined in the Credit Agreement) for the trailing four consecutive quarters, of no greater than
+6.0
+to 1.0. As of March 3
 
 ============================================================
 
 LIQUIDITY AND CAPITAL RESOURCES SECTION:
 
-LIQUIDITY AND CAPITAL RESOURCES
-Cash flows
-We anticipate that our existing cash and credit facilities will be sufficient to support our operating and investing needs for at least the next twelve months. Our future cash requirements could be affected by acquisitions that we may complete, purchases of our common stock or the payment of dividends in the future. Historically, we have used the liquidity generated from cash flow from operations, debt financings and issuances of common stock to finance our growth and operating needs. In the future, there are no assurances that we will continue to generate cash flow from operations or that additional financing alternatives will be available to us, if required, or, if available, will be obtained on terms favorable to us.
-We aggregate all bank accounts that are subject to our notional cash pooling arrangement into a single balance on our consolidated balance sheets. Our notional cash pooling arrangement is managed by a third-party financial institution and as of March 31, 2025, it was in a positive position. The cash and cash equivalent balance held outside of the United States in our foreign subsidiaries was primarily located in the Netherlands, Switzerland, and Hong Kong.
-36
-Table of Contents
-The following table presents our cash flows from operating activities, investing activities and financing activities for the periods presented (in millions):
-Three Months Ended
+Liquidity and Capital Resources
+As of
+(in millions, except percentages)
 March 31,
 2025
-2024
-Net cash provided by operating activities
+December 31, 2024
+% Change
+Assets:
+Cash and cash equivalents
 $
-65.0
+30.5
 $
-21.8
-Net cash used in investing activities
-(26.1
-)
-(304.2
-)
-Net cash provided by (used in) financing activities
-(51.2
-)
-151.7
-Effect of exchange rate changes on cash, cash equivalents and restricted cash
-13.3
-(17.6
-)
-Net increase (decrease) in cash, cash equivalents and restricted cash
-$
-1.0
-$
-(148.3
-)
-Net cash provided by operating activities during the three months ended March 31, 2025, resulted primarily from consolidated net income adjusted for non-cash items of $55.7 million, and a change in operating assets and liabilities, net of acquisitions of $9.3 million. Net cash provided by operating activities during the three months ended March 31, 2024, resulted primarily from net income adjusted for non-cash items of $85.2 million, partially offset by a change in operating assets and liabilities, net of acquisitions and divestitures of $63.4 million.
-The decrease in consolidated net income adjusted for non-cash items was primarily due to lower income as result of unfavorable margin mix and increased costs related to 2024 acquisitions.
-In the first quarter of 2025, the change in operating assets and liabilities was not significant in the context of our working capital. In the first quarter of 2024, the net decrease in operating assets and liabilities was primarily attributable to an increase in inventory balances.
-Net cash used in investing activities during the three months ended March 31, 2025, resulted primarily from purchases of property, plant and equipment of $26.0 million. Net cash used in investing activities during the three months ended March 31, 2024, resulted primarily from acquisitions of $274.5 million, purchases of property, plant and equipment of $21.4 million, and minority investments of $10.0 million.
-Net cash used in financing activities during the three months ended March 31, 2025, was primarily from net repayments of our revolving line of credit of $28.0 million, repayments of long-term debt of $7.7 million, and cash paid for purchases of common stock under our repurchase program of $10.0 million, offset by proceeds from long-term debt of $2.9 million. Net cash provided by financing activities during the three months ended March 31, 2024, was primarily from cash received from the revolving line of credit of $268.9 million, offset by cash paid for repayment of the 2012 Note Purchase Agreement of $100.0 million, repayment of long term debt of $3.4 million, and dividend payments of $7.3 million.
-Share Repurchase Program
-During the three months ended March 31, 2025, the Company purchased a total of 200,731 shares at an aggregate cost of $10.0 million under the 2023 Repurchase Program. During the three months ended March 31, 2024, the Company did not purchase any shares under the 2023 Repurchase Program. Refer to
-Note 21, Shareholder's Equity,
-in the Notes to our Unaudited Condensed Consolidated Financial Statements in this Quarterly Report on Form 10-Q for more information on our share repurchase program.
-Credit Facilities
-As of March 31, 2025, we have total outstanding debt of $2.1 billion and a revolving credit facility that provides for up to $900.0 million of backup liquidity to finance working capital needs, refinance or reduce existing indebtedness, and for general corporate use. In addition, the facility provides for an uncommitted incremental facility whereby, under certain circumstances, we may, at our option, increase the amount of the revolving facility or incur term loans in an aggregate amount not to exceed $400 million. As of March 31, 2025, we
-were in compliance with all covenants of our debt agreements.
-For a summary of the fair and carrying values of our outstanding debt as of March 31, 2025, and December 31, 2024, refer to
-Note 15, Debt and Note 16, Fair Value of Financial Instruments
-to our unaudited condensed consolidated financial statements included in this report. For additional information on our outstanding debt and credit facility refer to
-Note 21 Debt
-, to our unaudited condensed consolidated financial statements included in our Annual Report on Form 10-K for the year ended December 31, 2024.
-37
-Table of Contents
-CRITICAL ACCOUNTING POLICIES AND ESTIMATES
-There have been no material changes to our critical accounting policies and estimates since December 31, 2024. Refer to our Annual Report on Form 10-K for the year ended December 31, 2024 for a discussion of our critical accounting policies.
-RECENT ACCOUNTING PRONOUNCEMENTS
-Information regarding recent accounting standard changes and developments is incorporated by reference from Part I, Item 1, Unaudited Condensed Consolidated Financial Statements, of this document and should be considered an integral part of this Item 2. Refer to
-Note 2, Recent Accounting Pronouncements
-in the Notes to the Unaudited Condensed Consolidated Financial Statements in this Quarterly Report on Form 10-Q for recently adopted and issued accounting standards.
-ITEM 3.
-QUANTITATIVE AND QUALITATIVE DISCLOSURES
-ABOUT MARKET RISK
-Information concerning market risk is contained in Item 7A “Quantitative and Qualitative Disclosures About Market Risk” in our Annual Report on Form 10-K for the year ended December 31, 2024. As of March 31, 2025, there were no material changes in our exposure to market risk from December 31, 2024 other than the following:
-Tariff Risks
-During the first quarter of 2025, various tariffs were announced on imports into the U.S. On April 2, 2025, the U.S. announced a new universal baseline tariff of 10%, plus significant additional country-specific tariffs for select trading partners, on all U.S. imports. The reciprocal country-specific tariffs were subsequently paused for 90 days on most countries. The imposition of the baseline 10% tariff will increase our costs of goods sold. We are conducting an internal review and are assessing how the increased reciprocal tariffs may affect operating profitability, business operations, and strategies to mitigate potential cost increases.
-ITEM 4.
-CONTROLS AND PROCEDURES
-We have established disclosure controls and procedures (as defined in Rules 13a-15(e) and 15d-15(e) under the Securities Exchange Act of 1934, as amended (Exchange Act)) that are designed to ensure that material information relating to us, including our consolidated subsidiaries, is made known to our Chief Executive Officer (principal executive officer) and Chief Financial Officer (principal financial officer) by others within our organization. Under the supervision and with the participation of our management, including our Chief Executive Officer and Chief Financial Officer, we conducted an evaluation of the effectiveness of our disclosure controls and procedures as of March 31, 2025. Based on this evaluation, our Chief Executive Officer and Chief Financial Officer have concluded that our disclosure controls and procedures were effective as of March 31, 2025.
-Management concluded that the unaudited condensed consolidated financial statements contained in this Quarterly Report on Form 10-Q fairly state, in all material respects, our financial condition, results of operations and cash flows for the periods presented in conformity with GAAP.
-Changes in Internal Controls over Financial Reporting
-There have been no changes in our internal control over financial reporting during the three months ended March 31, 2025, that have materially affected, or are reasonably likely to materially affect, our internal control over financial reporting.
-38
-Table of Contents
-PART II OTHER INFORMATION
-ITEM 1.
-LEGAL PROCEEDINGS
-We are involved in lawsuits, claims, and proceedings, including, but not limited to, patent, customer, labor and employment and commercial matters, which arise in the ordinary course of business. As of March 31, 2025, other than as disclosed in
-Note 20, Commitments and Contingencies
-in the Notes to our Unaudited Condensed Consolidated Financial Statements in this Quarterly Report on Form 10-Q, the Company is not party to any material pending legal proceedings, other than ordinary routine litigation incidental to the Company’s business, to which the Company or any of its subsidiaries is a party or of which any of their property is the subject. However, the outcome of any of these proceedings cannot be accurately predicted, and the ultimate resolution of any of these existing matters may have a material adverse effect on the Company's business or financial condition.
-In addition, we are subject to regulation by national, state and local government agencies in the United States and other countries in which we operate. From time to time, we are the subject of governmental investigations often involving regulatory, marketing and other business practices. These governmental investigations may result in the commencement of civil and criminal proceedings, fines, penalties and administrative remedies which could have a material adverse effect on our financial position, results of operations and/or liquidity.
-ITEM 1A.
-RISK FACTORS
-In addition to the other information set forth in this report, you should carefully consider the factors discussed in Part I, Item 1A. “Risk Factors” in our Annual Report on Form 10-K for the year ended December 31, 2024, which could materially affect our business, financial condition or future results. The risks described in this report and in our Annual Report on Form 10-K are not the only risks we face. Additional risks and uncertainties not currently known to us or that we currently deem to be immaterial also may materially adversely affect our business, financial condition and/or operating results.
-ITEM 2.
-UNREGISTERED SALES OF EQUITY SECURITIES AND USE OF PROCEEDS
-The following table provides information about purchases made by or on behalf of the Company or any “affiliated purchaser”, as defined in Rule 10b-18(a)(3) under the Exchange Act, during the quarter ended March 31, 2025, of shares of our Common Stock.
-Period
-Total Number of Shares Purchased (1)
-Average Price Paid per Share
-Total Number of Shares Purchased as Part of Publicly Announced Plans or Programs
-Maximum Number (or Approximate Dollar Value) of Shares that May Yet Be Purchased Under the Plans or Program (2)
-January 1 - January 31, 2025
-—
-$
-—
-—
-$
-369,922,324
-February 1 - February 28, 2025
-200,731
-49.81
-200,731
-359,922,966
-March 1 - March 31, 2025
-—
-$
-—
-—
-359,922,966
-200,731
-$
-49.81
-200,731
-$
-359,922,966
-(1)
-The Company purchased shares of common stock in accordance with the 2023 share repurchase program (the “2023 Repurchase Program”). The shares were purchased on the open market at prevailing prices. Under the 2023 Repurchase Program, the Company may repurchase shares pursuant to Rule 10b5-1 and/or Rule 10b-18 under the Exchange Act.
+46.9
+(35)
+%
+Receivables, less allowance ($21.4 in 2025 and $20.6 in 2024)
+258.5
+305.3
+(15)
+Prepaid lease and transit franchise costs
+3.9
+4.0
+(3)
+Other prepaid expenses
+17.4
+17.8
 (2)
-The 2023 Repurchase Program authorizes the purchases of the Company's common stock of up to $500.0 million from time to time over a two-year period, in amounts, at prices, and at such times as management deems appropriate, subject to market conditions, legal requirements and other considerations.
+Other current assets
+11.0
+11.8
+(7)
+Total current assets
+321.3
+385.8
+(17)
+Liabilities:
+Accounts payable
+42.4
+51.4
+(18)
+Accrued compensation
+37.7
+56.7
+(34)
+Accrued interest
+23.0
+34.5
+(33)
+Accrued lease and transit franchise costs
+59.6
+82.8
+(28)
+Other accrued expenses
+57.1
+54.3
+5
+Deferred revenues
+59.5
+42.8
+39
+Short-term debt
+50.0
+10.0
+*
+Short-term operating lease liabilities
+177.4
+168.7
+5
+Other current liabilities
+23.1
+19.6
+18
+Total current liabilities
+529.8
+520.8
+2
+Working capital
+$
+(208.5)
+$
+(135.0)
+54
+*    Calculation is not meaningful.
+We continually project anticipated cash requirements for our operating, investing and financing needs as well as cash flows generated from operating activities available to meet these needs. Due to seasonal advertising patterns and influences on advertising markets, our revenues and operating income are typically highest in the fourth quarter, during the holiday shopping season, and lowest in the first quarter, as advertisers adjust their spending following the holiday shopping season. Further, certain of our municipal transit contracts require guaranteed minimum annual payments to be paid on a monthly or quarterly basis, as applicable.
+Our short-term cash requirements primarily include payments for operating leases, guaranteed minimum annual payments, interest, capital expenditures, equipment deployment costs and dividends. Funding for short-term cash needs will come primarily from our cash on hand, operating cash flows, our ability to issue debt and equity securities, and borrowings under the Revolving Credit Facility (as defined below), the AR Facility (as defined below) or other credit facilities that we may establish, to the extent available.
+In addition, as part of our growth strategy, we frequently evaluate strategic opportunities to acquire new businesses, assets or digital technology, directly or in connection with joint ventures (including buy/sell arrangements with joint venture partners). Consistent with this strategy, we regularly evaluate potential acquisitions, ranging from small transactions to larger acquisitions, which transactions and transaction-related expenses will be funded through cash on hand, additional borrowings, equity or other securities, or some combination thereof.
+Our long-term cash needs include principal payments on outstanding indebtedness and commitments related to operating leases and franchise and other agreements, including any related guaranteed minimum annual payments, and equipment deployment costs. Funding for long-term cash needs will come from our cash on hand, operating cash flows, our ability to issue debt and equity securities, and borrowings under the Revolving Credit Facility or other credit facilities that we may establish, to the extent available.
+Although we have taken several actions to date to enhance our financial flexibility and increase our liquidity, our short-term and long-term cash needs and related funding capability may be adversely affected if cash on hand and operating cash flows decrease in 2025, and our ability to issue debt and equity securities and/or borrow under our existing or new credit facilities on reasonable pricing terms, or at all, may become uncertain. (See the “Overview” section of this MD&A.)
 39
 Table of Contents
-ITEM 5.
-OTHER INFORMATION
-Director and Officer Trading Arrangements
-During the quarter ended March 31, 2025, none of the Company’s directors or officers informed the Company of the
-adoption
-or
-termination
-of a “Rule 10b5-1 trading arrangement” or “non-Rule 10b5-1 trading arrangement”, as those terms are defined in Regulation S-K, Item 408
-except as follows:
-On
-February 18, 2025
-,
-Dr. Cynthia Friend
-, a member of the Company’s
-Board of Directors
-,
-adopted
-a trading plan intended to satisfy the affirmative defense conditions of Rule 10b5-1(c) of the Exchange Act. Dr. Friend’s plan provides for the sale of up to (a)
-5,192
-shares of the Company’s Common Stock underlying time-based restricted stock units and (b)
-4,300
-shares of Common Stock underlying stock options granted under an equity compensation plan. Any sales completed by Dr. Friend pursuant to the plan will be made in accordance with the prices and formulas set forth therein. The plan will terminate on the earlier of the date on which all the shares under the plan are sold and December 15, 2025, subject to earlier termination for certain specified events set forth in the plan.
+Working capital was a deficit of $208.5 million as of March 31, 2025, compared to a deficit of $135.0 million as of December 31, 2024, primarily driven by lower receivables, higher borrowings under the AR Facility, lower accrued lease and franchise costs, and lower bonus accruals.
+Under the current MTA agreement, which was amended in June 2020 and July 2021 and is subject to modification as agreed-upon by us and the MTA (as amended, the “MTA Agreement”):
+•
+Deployments
+. We must deploy, over a number of years, (i) 5,433 digital advertising screens on subway and train platforms and entrances, (ii) 15,896 smaller-format digital advertising screens on rolling stock, and (iii) 9,283  MTA communications displays, which amounts are subject to the MTA’s ability to fulfill its pre-installation obligations under the MTA Agreement. We are also obligated to deploy certain additional digital advertising screens and MTA communications displays in subway and train stations and rolling stock that the MTA may build or acquire in the future (collectively, the “New Inventory”).
+•
+Recoupment of Equipment Deployment Costs.
+We may retain incremental revenues that exceed an annual base revenue amount for the cost of deploying advertising and communications displays throughout the transit system. Recoupable MTA equipment deployment costs are recorded as
+Prepaid MTA equipment deployment costs
+and
+Intangible assets
+on our Consolidated Statement of Financial Position, and as these costs are recouped from incremental revenues that the MTA would otherwise be entitled to receive,
+Prepaid MTA equipment deployment costs
+will be reduced. If incremental revenues generated over the term of the agreement are not sufficient to cover all or a portion of the equipment deployment costs, the costs will not be recouped, which could have an adverse effect on our business, financial condition and results of operations, including impairment charges (see Note 4.
+Intangible
+Assets
+to the Consolidated Financial Statements). If we do not recoup all costs of deploying advertising and communications screens with respect to the New Inventory by the end of the term of the MTA Agreement, the MTA will be obligated to reimburse us for these costs. Deployment costs in an amount not to exceed $50.7 million, which are deemed authorized before December 31, 2020, will be paid directly by the MTA. For any deployment costs deemed authorized after December 31, 2020, the MTA and the Company will no longer be obligated to directly pay 70% and 30% of the costs, respectively, and these costs will be subject to recoupment in accordance with the MTA Agreement. We did not recoup any equipment deployment costs in the three months ended March 31, 2025. In addition, we currently do not expect to recoup any equipment deployment costs throughout the remainder of the Amended Term (as defined below) of the MTA Agreement. We expect our MTA equipment deployment costs to be approximately $35.0 million in 2025. We expect MTA equipment deployment costs to be approximately $30.0 million to $40.0 million annually throughout the remainder of the Amended Term (as defined below) of the MTA Agreement and encompass replacement costs. Accordingly, we expect annual MTA equipment deployment costs will decline now that we have substantially completed our initial deployment during 2024.
+•
+Payments
+. We must pay to the MTA the greater of a percentage of revenues or a guaranteed minimum annual payment. Our payment obligations with respect to guaranteed minimum annual payment amounts owed to the MTA resumed on January 1, 2021, in accordance with the terms of the MTA Agreement, and any guaranteed minimum annual payment amounts that would have been paid for the period from April 1, 2020 through December 31, 2020 (less any revenue share amounts actually paid during this period using an increased revenue share percentage of 65%) will instead be added in equal increments to the guaranteed minimum annual payment amounts owed for the period from January 1, 2022, through December 31, 2026. The MTA Agreement also provides that if prior to April 1, 2028 the balance of unrecovered costs of deploying advertising and communications screens throughout the transit system is equal to or less than zero, then in any year following the year in which such recoupment occurs (the “Recoupment Year”), the MTA is entitled to receive an additional payment equal to 2.5% of the annual base revenue amount for such year calculated in accordance with the MTA Agreement, provided that gross revenues in such year (i) were at least equal to the gross revenues generated in the Recoupment Year, and (ii) did not decline by more than 5% from the prior year.
+•
+Term
+. In July 2021, we extended the initial 10-year term of the MTA Agreement to a 13-year base term (the “Amended Term”). We have the option to extend the Amended Term for an additional five-year period at the end of the Amended Term, subject to satisfying certain quantitative and qualitative conditions.
+We may utilize cash on hand and/or incremental third-party financing to fund equipment deployment costs over the next couple of years. However, we cannot reasonably estimate the aggregate financing amount, if any, at this time. As of March 31, 2025, we have issued surety bonds in favor of the MTA totaling approximately $136.0 million, which amount is subject to change as equipment installations are completed and revenues are generated. We incurred $3.7 million related to MTA equipment deployment costs in the three months ended March 31, 2025 (which includes equipment deployment costs related to future deployments), for a total of $612.6 million to date, of which $33.9 million had been recouped from incremental revenues to
 40
 Table of Contents
-ITEM 6.
-EXHIBITS
-Exhibit No.
-Description
-31.1*
-Certification by Chief Executive Officer pursuant to Section 302 of the Sarbanes-Oxley Act of 2002
-31.2*
-Certification by Chief Financial Officer pursuant to Section 302 of the Sarbanes-Oxley Act of 2002
-32.1*
-Certification by Chief Executive Officer and Chief Financial Officer pursuant to 18 U.S.C. Section 1350, as adopted pursuant to Section 906 of the Sarbanes-Oxley Act of 2002
-101.INS*
-Inline XBRL Instance Document
-101.SCH*
-Inline XBRL Taxonomy Extension Schema Document
-101.CAL*
-Inline XBRL Taxonomy Extension Calculation Linkbase Document
-101.DEF*
-Inline XBRL Taxonomy Extension Definition Linkbase Document
-101.LAB*
-Inline XBRL Taxonomy Extension Label Linkbase Document
-101.PRE*
-Inline XBRL Taxonomy Extension Presentation Linkbase Document
-104*
-The cover page from the Company’s Quarterly Report on Form 10-Q for the quarter ended March 31, 2025 has been formatted in Inline XBRL (included in Exhibit 101)
-* Filed or furnished herewith.
+date. As of March 31, 2025, we had
+Intangible assets
+related to franchise agreements balance related to the MTA Agreement of $13.9 million. As of March 31, 2025, 27,033 digital displays had been installed, composed of 4,998 digital advertising screens on subway and train platforms and entrances, 15,664 smaller-format digital advertising screens on rolling stock and 6,371 MTA communications displays. In the three months ended March 31, 2025, 788 installations occurred.
+As a result of negative aggregate undiscounted cash flow forecasts related to our MTA asset group, we performed a quarterly impairment analysis on the MTA asset group during the three months ended March 31, 2024, and recorded an impairment charge of $9.1 million for the quarter. The impairment charge recorded during 2024 represented additional MTA equipment deployment cost spending during the three months ended March 31, 2024. No impairment charges were recorded during the three months ended March 31, 2025. We currently expect positive aggregate cash flows on an undiscounted basis through to the end of the Amended Term of the MTA Agreement. If our MTA performance continues to be in line with, or better than, our current model, we would not expect to incur additional impairment charges on our MTA equipment deployment cost spending. There can be no assurance that these estimates and assumptions will prove to be an accurate prediction of the future, and a downward revision of these estimates and/or assumptions would decrease our cash flows, which could result in additional impairment charges in the future.
+On May 8, 2025, we announced that our board of directors approved a quarterly cash dividend of $0.30 per share on our common stock payable on June 30, 2025, to stockholders of record at the close of business on June 6, 2025.
+Debt
+Debt, net, consists of the following:
+As of
+(in millions, except percentages)
+March 31,
+2025
+December 31,
+2024
+Short-term debt:
+AR Facility
+$
+50.0
+$
+10.0
+Total short-term debt
+50.0
+10.0
+Long-term debt:
+Term loan, due 2026
+399.6
+399.5
+Senior secured notes:
+7.375% senior secured notes, due 2031
+450.0
+450.0
+Senior unsecured notes:
+5.000% senior unsecured notes, due 2027
+650.0
+650.0
+4.250% senior unsecured notes, due 2029
+500.0
+500.0
+4.625% senior unsecured notes, due 2030
+500.0
+500.0
+Total senior unsecured notes
+1,650.0
+1,650.0
+Debt issuance costs
+(15.9)
+(17.0)
+Total long-term debt, net
+2,483.7
+2,482.5
+Total debt, net
+$
+2,533.7
+$
+2,492.5
+Weighted average cost of debt
+5.4
+%
+5.4
+%
+Payments Due by Period
+(in millions)
+Total
+2025
+2026-2027
+2028-2029
+2030 and thereafter
+Long-term debt
+$
+2,500.0
+$
+—
+$
+1,050.0
+$
+500.0
+$
+950.0
+Interest
+578.8
+140.6
+240.6
+144.5
+53.1
+Total
+$
+3,078.8
+$
+140.6
+$
+1,290.6
+$
+644.5
+$
+1,003.1
 41
 Table of Contents
-SIGNATURES
-Pursuant to the requirements of the Securities Exchange Act of 1934, the registrant has duly caused this report to be signed on its behalf by the undersigned, thereunto duly authorized.
-Date: May 7, 2025
-BRUKER CORPORATION
-By:
-/s/ FRANK H. LAUKIEN, PH.D.
-Frank H. Laukien, Ph.D.
-President, Chief Executive Officer and Chairman
-(Principal Executive Officer)
-Date: May 7, 2025
-By:
-/s/ GERALD N. HERMAN
-Gerald N. Herman
-Executive Vice President and Chief Financial Officer
-(Principal Financial Officer)
-Date: May 7, 2025
-By:
-/s/ THOMAS BURES
-Thomas Bures
-Chief Accounting Officer
-(Principal Accounting Officer)
+Term Loan
+The interest rate on the term loan due in 2026 (the “Term Loan”) was 6.1% per annum as of March 31, 2025. As of March 31, 2025, a discount of $0.4 million on the Term Loan remains unamortized. The discount is being amortized through
+Interest expense, net
+, on the Consolidated Statement of Operations.
+Revolving Credit Facility
+We also have a $500.0 million revolving credit facility, which matures in 2028 (the “Revolving Credit Facility,” together with the Term Loan, the “Senior Credit Facilities”).
+As of March 31, 2025, there were no outstanding borrowings under the Revolving Credit Facility.
+The commitment fee based on the amount of unused commitments under the Revolving Credit Facility was $0.5 million in each of the three months ended March 31, 2025, and 2024. As of March 31, 2025, we had issued letters of credit totaling approximately $5.2 million against the letter of credit facility sublimit under the Revolving Credit Facility.
+Standalone Letter of Credit Facilities
+As of March 31, 2025, we had issued letters of credit totaling approximately $64.7 million under our aggregate $81.0 million standalone letter of credit facilities. The total fees under the letter of credit facilities were immaterial in each of the three months ended March 31, 2025 and 2024.
+Accounts Receivable Securitization Facility
+As of March 31, 2025, we have a $150.0 million revolving accounts receivable securitization facility (the “AR Facility”), which terminates in June 2027, unless further extended.
+In connection with the AR Facility, Outfront Media LLC and Outfront Media Outernet Inc., each a wholly-owned subsidiary of the Company, and certain of the Company’s taxable REIT subsidiaries (“TRSs”) (the “Originators”), will sell and/or contribute their respective existing and future accounts receivable and certain related assets to either Outfront Media Receivables LLC, a special purpose vehicle and wholly-owned subsidiary of the Company relating to the Company’s qualified REIT subsidiary accounts receivable assets (the “QRS SPV”) or Outfront Media Receivables TRS, LLC a special purpose vehicle and wholly-owned subsidiary of the Company relating to the Company’s TRS accounts receivable assets (the “TRS SPV” and together with the QRS SPV, the “SPVs”). The SPVs may transfer undivided interests in their respective accounts receivable assets to certain purchasers from time to time (the “Purchasers”). The SPVs are separate legal entities with their own separate creditors who will be entitled to access the SPVs’ assets before the assets become available to the Company. Accordingly, the SPVs’ assets are not available to pay creditors of the Company or any of its subsidiaries, although collections from the receivables in excess of amounts required to repay the Purchasers and other creditors of the SPVs may be remitted to the Company. Outfront Media LLC will service the accounts receivables on behalf of the SPVs for a fee. The Company has agreed to guarantee the performance of the Originators and Outfront Media LLC, in its capacity as servicer, of their respective obligations under the agreements governing the AR Facility. Neither the Company, the Originators nor the SPVs guarantee the collectability of the receivables under the AR Facility. Further, the TRS SPV and the QRS SPV are jointly and severally liable for their respective obligations under the agreements governing the AR Facility.
+As of March 31, 2025, there were $50.0 million of outstanding borrowings under the AR Facility, at a borrowing rate of 5.6%. As of March 31, 2025, borrowing capacity remaining under the AR Facility was $100.0 million based on approximately $312.9 million of accounts receivable that could be used as collateral for the AR Facility in accordance with the agreements governing the AR Facility. The commitment fee based on the amount of unused commitments under the AR Facility was $0.1 million in each of the three months ended March 31, 2025 and 2024. In April 2025, we made a repayment of $10.0 million under the AR Facility.
+Debt Covenants
+Our credit agreement, dated as of January 31, 2014 (as amended, restated, amended and restated, supplemented or otherwise modified, the “Credit Agreement”), governing the Senior Credit Facilities, the agreements governing the AR Facility, and the indentures governing our senior notes contain customary affirmative and negative covenants, subject to certain exceptions, including but not limited to those that restrict the Company’s and its subsidiaries’ abilities to (i) pay dividends on, repurchase or make distributions in respect to the Company’s or its wholly-owned subsidiary, Outfront Media Capital LLC’s capital stock or
 42
+Table of Contents
+make other restricted payments other than dividends or distributions necessary for us to maintain our REIT status, subject to certain conditions and exceptions, (ii) enter into agreements restricting certain subsidiaries’ ability to pay dividends or make other intercompany or third-party transfers, and (iii) incur additional indebtedness. One of the exceptions to the restriction on our ability to incur additional indebtedness is satisfaction of a Consolidated Total Leverage Ratio, which is the ratio of our consolidated total debt to our Consolidated EBITDA (as defined in the Credit Agreement) for the trailing four consecutive quarters, of no greater than 6.0 to 1.0. As of March 31, 2025, our Consolidated Total Leverage Ratio was 4.8 to 1.0, as adjusted to give pro forma effect to the Transaction, in accordance with the Credit Agreement.
+The terms of the Credit Agreement (and under certain circumstances, the agreements governing the AR Facility) require that we maintain a Consolidated Net Secured Leverage Ratio, which is the ratio of (i) our consolidated secured debt (less up to $150.0 million of unrestricted cash) to (ii) our Consolidated EBITDA (as defined in the Credit Agreement) for the trailing four consecutive quarters, of no greater than 4.5 to 1.0. As of March 31, 2025, our Consolidated Net Secured Leverage Ratio was 1.6 to 1.0, as adjusted to give pro forma effect to the Transaction, in accordance with the Credit Agreement. As of March 31, 2025, we are in compliance with our debt covenants.
+Deferred Financing Costs
+As of March 31, 2025, we had deferred $19.6 million in fees and expenses associated with the Term Loan, the Revolving Credit Facility, the AR Facility and our senior notes. We are amortizing the deferred fees through
+Interest expense, net,
+on our Consolidated Statement of Operations over the respective terms of the Term Loan, Revolving Credit Facility, AR Facility and our senior notes.
+Equity
+At-the-Market Equity Offering Program
+We have a sales agreement in connection with an “at-the-market” equity offering program (the “ATM Program”), under which we may, from time to time, issue and sell shares of our common stock up to an aggregate offering price of $300.0 million. We have no obligation to sell any of our common stock under the sales agreement and may at any time suspend solicitations and offers under the sales agreement. No shares were sold under the ATM Program during the three months ended March 31, 2025. As of March 31, 2025, we had approximately $232.5 million of capacity remaining under the ATM Program.
+Series A Preferred Stock Issuance
+On April 20, 2020, we issued 400,000 shares of our Series A Convertible Perpetual Preferred Stock (the “Series A Preferred Stock”), par value $0.01 per share. The Series A Preferred Stock ranks senior to the shares of the Company’s common stock with respect to dividend and distribution rights. Holders of the Series A Preferred Stock are entitled to a cumulative dividend accruing at the initial rate of 7.0% per year, payable quarterly in arrears, subject to increases as set forth in the Articles Suppleme

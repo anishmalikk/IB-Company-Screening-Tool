@@ -146,7 +146,7 @@ def extract_debt_related_text_focused(text_content: str, debt_sections: list, de
 You are a financial document expert. Extract ONLY the actual debt facilities from this 10-Q filing.
 
 CRITICAL INSTRUCTIONS:
-1. Focus PRIMARILY on the DEBT NOTE SECTIONS AND CREDIT FACILITIES SECTION
+1. Focus PRIMARILY on the DEBT NOTE SECTIONS AND Liquidity and Capital Resources SECTION
 2. Pay special attention to the "CREDIT FACILITIES SECTION" - this contains revolving credit facility and term loan agreement details
 3. Use tables as supporting evidence to validate amounts, rates, and maturities
 4. DO NOT make up or infer facilities that are not explicitly mentioned
@@ -159,19 +159,17 @@ FACILITIES TO LOOK FOR:
 - **Senior Notes** (look for notes payable, debt securities with fixed rates and maturity dates)
 - **Credit Lines** (look for lines of credit, working capital facilities)
 - **Credit Agreements** (look for amended and restated credit agreements)
+- Any other debt instrument that is mentioned in the 10-Q
 
-CRITICAL DISTINCTION:
-- **Term Loans** are borrowings under loan agreements (may or may not have explicit interest rates)
 - **Senior Notes** are debt securities (usually have explicit fixed rates)
-- **Both can exist in different currencies** (USD, CHF, EUR, etc.) - extract all types
 
 CRITICAL RULES:
-- Look for revolving credit facility commitments and total amounts available
+- Look for revolving credit facility total amounts available
 - Look for lead arrangers, lenders, or banking partners mentioned
 - Look for interest rate terms (SOFR, LIBOR, fixed rates, basis points spreads)
 - Look for maturity dates and payment terms
 - Use EXACT amounts and rates from tables and narrative text
-- CRITICAL: Distinguish between term loans and senior notes - they are different instrument types
+- CRITICAL: Distinguish between revolving credit facilities, term loans, and senior notes - they are different instrument types
 - CRITICAL: Extract facilities in their original currency (CHF, EUR, USD, etc.)
 - Use EXACT amounts from the source (do not round or estimate)
 - Include currency exactly as stated in the source document
@@ -182,24 +180,18 @@ For each facility found, provide:
 - Facility Type (Revolver, Term Loan, Senior Notes, etc.)
 - Amount (with currency) - EXACT amount from source
 - Interest Rate (or MISSING if not stated)
-- Maturity Date (or MISSING if not stated)
+- Maturity Date (MM/YYYYor MISSING if not stated)
 - Lead Bank/Lender (or MISSING if not stated)
-- Source section where found
+- Source section where found (supporting text about the facility, put as much info as possible about the facility here)
 
 SPECIAL FOCUS AREAS:
-- Look for revolving credit facility commitments and available amounts
+- Look for revolving credit facility commitments and available amounts, and specifcally max agreement amounts
 - Look for term loan agreements and payment terms
 - Look for lead banks, arrangers, or lender references
 - Look for interest rate terms (SOFR, LIBOR, fixed rates, spreads)
-- Look for maturity dates and payment schedules
+- Look for maturity dates and payment schedules. Make sure you get these maturities correct, dont use any other dates like ones from other types of debt or the filing date.
 - CRITICAL: Extract both term loans AND senior notes as separate facility types
 - CRITICAL: Preserve original currency amounts (CHF, EUR, etc.) not just USD equivalents
-
-GENERIC EXTRACTION APPROACH:
-- Scan for any "loan" facilities (term loans, credit lines, etc.)
-- Scan for any "notes" or debt securities (senior notes, convertible notes, etc.)
-- Extract amounts in their original stated currency
-- Identify instrument type (loan vs note vs facility)
 
 {sections_text}
 
@@ -327,26 +319,17 @@ def convert_debt_to_laymans_terms(complete_debt_info: str, debug=False):
     Organizes facilities by maturity date and uses the specified format.
     """
     prompt = f"""
-Now I'm going to give you their "Debt" and "Liquidity and Capital Resources" section from their latest 10-Q. I want you to convert these sections to layman's terms, and specifically focus on their debt capital stack. I want them organized from maturing the earliest to maturing the latest, and the format for the credit facilities should be:
+I'm going to give you their "Debt" and "Liquidity and Capital Resources" section from their latest 10-Q, along with other important information. I want you to convert these sections to layman's terms, and specifically focus on their debt capital stack. I want them organized from maturing the earliest to maturing the latest, and the format for the credit facilities should be:
 facility @ (interest rate) mat. mm/yyyy (Lead Bank)
 and then any supporting bullet points and specifics in bullets underneath it. make sure the full facility is at the top, and then supporting bullets like what they drew. here's an example: 
 650M Term Loan @ SOFR + 137-187 bps mat. 3/2030 (BofA) 
 
-HANDLING MISSING INFORMATION:
-- If interest rates are not explicitly stated in the 10-Q → "MISSING - CHECK CREDIT AGREEMENT" 
-- If lead banks are not explicitly named in the 10-Q → "MISSING - CHECK CREDIT AGREEMENT"
-- If exact maturity dates are not stated → "MISSING - CHECK CREDIT AGREEMENT"
-- For revolving credit facilities, use the COMMITTED amount (e.g., "up to $900 million"), not outstanding usage
+Make sure you get the maturity dates correct, and if they are not stated, you can add a supporting bullet point under it like the usage and "Check credit agreement for missing information".
 
-CRITICAL CURRENCY HANDLING:
-- Always use ORIGINAL currency amounts (CHF, EUR) as the primary amount, NOT USD equivalents
-- Example: Use "297M CHF Senior Notes" NOT "$335.7M Senior Notes"
-- Example: Use "150M EUR Senior Notes" NOT "$162.2M Senior Notes" 
-- USD equivalents can be shown in parentheses but original currency is primary
-- For CHF/EUR Term Loans, use the original CHF/EUR amounts, not USD conversions
-
+This is the most important part of the process, so make sure you do it correctly:
 Critical: ONLY USE FULL FACILITY AMOUNTS FOR THE MAIN NOTES. if any information if missing, you can add a supporting bullet point under it like the usage and "Check credit agreement for missing information".
 Critical: Dont give any fluff or extra information or extra words (such as "heres the debt information"), just the debt information and supporting notes.
+Critical: Make sure you include ALL facilities, and dont miss any.
 
 Heres an example of some good output:
 $300M Term Loan @ MISSING - CHECK CREDIT AGREEMENT mat. 12/2026 (MISSING - CHECK CREDIT AGREEMENT)
@@ -355,7 +338,9 @@ $900M Revolver @ MISSING - CHECK CREDIT AGREEMENT mat. MISSING - CHECK CREDIT AG
 300M CHF Sr. Notes @ 0.88% mat. 12/2031 
 150M EUR Sr. Notes @ 1.03% mat. 12/2031
 50M CHF Sr. Notes @ 2.56% mat. 4/2034
+$100M Term Loan @ 4.5% mat. 12/2026 (BofA)
 
+Its really important that this information is correct, otherwise its useless- make sure you think through it, take your time, and make sure you get it right. Triple check all the information before you return it.
 ---------------------------------------------------------------------------
 
 COMPLETE DEBT AND LIQUIDITY INFORMATION:
@@ -397,7 +382,7 @@ You are a conservative financial verification expert. Your job is to make MINIMA
 
 CONSERVATIVE VERIFICATION TASKS (ONLY DO THESE):
 1. Organize ALL facilities by maturity date (earliest to latest)
-2. If a facility amount appears to be USAGE rather than full facility size, add a bullet point: "THIS IS USAGE, CHECK CREDIT AGREEMENT FOR FULL FACILITY AMOUNT"
+2. If a facility amount appears to be USAGE rather than full facility size, add a bullet point: "THIS IS USAGE, CHECK CREDIT AGREEMENT FOR FULL FACILITY AMOUNT". Then for the main bullet point, replace the usage amount with the full facility amount if its in the source data, otherwise with "max amt not stated".
 3. Remove interest rates that are not explicitly stated in the source data
 
 CRITICAL RULES:
@@ -449,7 +434,7 @@ Return the conservatively verified debt analysis organized by maturity:
                 {"role": "system", "content": "You are a conservative financial verification expert. Make MINIMAL changes - only organize by maturity and flag clear usage amounts. Preserve ALL facilities and information."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.1  # Low temperature for accuracy
+            temperature=0.2  # Low temperature for accuracy
         )
         
         verified_text = response.choices[0].message.content.strip()
@@ -524,8 +509,8 @@ def download_and_parse_10q(ticker: str):
 
 if __name__ == "__main__":
     # Test debt extraction for BRKR
-    ticker = "BRKR"
-    debug = True  # Enable debug output
+    ticker = "OUT"
+    debug = False  # Enable debug output
     
     # Step 1 & 2: Download and parse
     soup, link = download_and_parse_10q(ticker)
