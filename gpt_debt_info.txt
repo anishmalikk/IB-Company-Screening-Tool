@@ -1,0 +1,323 @@
+Debt-Related Text Extraction for BRKR
+============================================================
+
+**Revolving Credit Facilities:**
+
+- **2024 Amended and Restated Credit Agreement (Revolving Credit Facility)**
+  - Total Commitments: **$900.0 million**
+  - Outstanding Borrowings (as of March 31, 2025): **$0.0 million**
+  - Letters of Credit Outstanding: **$0.3 million**
+  - Total Available: **$899.7 million**
+  - Weighted Average Interest Rate: **0.36%**
+  - Maturity Date: **March 31, 2025**
+  - Lead Bank/Lender: **MISSING**
+
+- **Other Lines of Credit (primarily in Germany and Switzerland)**
+  - Total Commitments: **$173.4 million**
+  - Outstanding Borrowings: **$0.0 million**
+  - Outstanding Letters of Credit: **N/A**
+  - Total Available: **$173.4 million**
+  - Variably priced (interest rate: Varies)
+  - Maturity Date: **N/A (due upon demand)**
+  - Lead Bank/Lender: **MISSING**
+
+- **Total Revolving Lines of Credit (including the above)**
+  - Total Commitments: **$1,073.4 million**
+  - Outstanding Borrowings: **$0.0 million**
+  - Outstanding Letters of Credit: **$173.7 million**
+  - Total Available: **$899.7 million**
+
+---
+
+**Term Loans and Notes:**
+
+- **2019 Term Loan Agreement (USD)**
+  - Outstanding Amount (as of March 31, 2025): **$259.5 million**
+  - Maturity Date: **December 2026**
+  - Interest Rate: **MISSING** (not explicitly stated)
+  - Lead Bank/Lender: **MISSING**
+
+- **CHF Notes under the 2024 Term Loan Agreement (Multiple tranches):**
+  - Due 2027: **$165.3 million**
+  - Due 2029: **$165.3 million**
+  - Due 2031: **$169.5 million**
+  - Maturities: **2027, 2029, 2031**
+  - Interest Rates: **2.56%, 2.62%, 2.71% (CHF notes), 2.60%, 2.62% (CHF notes)**
+  - Lead Bank/Lender: **MISSING**
+
+- **Notes Purchase Agreements (Senior Notes):**
+  - **2024 Notes due April 15, 2034 (CHF):** **$56.5 million** at 2.56%
+  - **2024 Notes due April 15, 2036 (CHF):** **$221.5 million** (CHF 146 million at 2.62%, CHF 50 million at 2.60%)
+  - **2024 Notes due April 15, 2039 (CHF):** **$209.1 million** (CHF 135 million at 2.71%, CHF 50 million at 2.62%)
+  - **2021 Notes due December 8, 2031 (CHF):** **$339.1 million** at 0.88%
+  - **2019 Notes due December 11, 2029 (CHF):** **$335.7 million** at 1.01%
+  - **2021 Notes due December 8, 2031 (EUR):** **$162.2 million** (EUR 150 million at 1.03%)
+
+- **Other Loans:**
+  - **In U.S. Dollars (as of March 31, 2025):** **$14.9 million**
+  - Outstanding as of December 31, 2024: **$11.9 million**
+
+- **Total Notes and Loans Outstanding:**
+  - **$2,095.7 million** (March 31, 2025)
+  - **$2,076.8 million** (December 31, 2024)
+
+- **Finance Lease Obligations:**
+  - **$18.1 million** (March 31, 2025)
+  - **$17.5 million** (December 31, 2024)
+
+- **Total Debt (including notes, loans, leases):**
+  - **$2,113.8 million** (March 31, 2025)
+  - **$2,094.3 million** (December 31, 2024)
+
+---
+
+**Additional Notes:**
+
+- The **2024 Revolving Credit Agreement** is the primary USD revolving facility, with a maximum commitment of **$900 million** and net outstanding borrowings of **$0** as of March 31, 2025.
+- The **CHF notes** are documented as part of the 2024 Term Loan Agreement and various senior notes, with explicit amounts, maturities, and interest rates.
+- The **2019 Term Loan** is documented with quarterly payments and a balloon payment due December 2026.
+- The **Senior Notes** are detailed with amounts, currencies, maturity dates, and fixed interest rates.
+- The **Total outstanding debt** includes all these facilities, with explicit amounts and maturities provided.
+
+**Note:** All amounts are in USD unless otherwise specified. MISSING indicates data not explicitly provided in the sections.
+
+============================================================
+
+CREDIT FACILITIES SECTION (KEY REVOLVER/TERM LOAN INFO):
+
+Credit Facilities
+As of March 31, 2025, we have total outstanding debt of $2.1 billion and a revolving credit facility that provides for up to $900.0 million of backup liquidity to finance working capital needs, refinance or reduce existing indebtedness, and for general corporate use. In addition, the facility provides for an uncommitted incremental facility whereby, under certain circumstances, we may, at our option, increase the amount of the revolving facility or incur term loans in an aggregate amount not to exceed $400 million. As of March 31, 2025, we
+were in compliance with all covenants of our debt agreements.
+For a summary of the fair and carrying values of our outstanding debt as of March 31, 2025, and December 31, 2024, refer to
+Note 15, Debt and Note 16, Fair Value of Financial Instruments
+to our unaudited condensed consolidated financial statements included in this report. For additional information on our outstanding debt and credit facility refer to
+Note 21 Debt
+, to our unaudited condensed consolidated financial statements included in our Annual Report on Form 10-K for the year ended December 31, 2024.
+37
+Table of Contents
+CRITICAL ACCOUNTING POLICIES AND ESTIMATES
+There have been no material changes to our critical accounting policies and estimates since December 31, 2024. Refer to our Annual Report on Form 10-K for the year ended December 31, 2024 for a discussion of our critical accounting policies.
+RECENT ACCOUNTING PRONOUNCEMENTS
+Information regarding recent accounting standard changes and developments is incorporated by reference from Part I, Item 1, Unaudited Condensed Consolidated Financial Statements, of this document and should be considered an integral part of this Item 2. Refer to
+Note 2, Recent Accounting Pronouncements
+in the Notes to the Unaudited Condensed Consolidated Financial Statements in this Quarterly Report on Form 10-Q for recently adopted and issued accounting standards.
+ITEM 3.
+QUANTITATIVE AND QUALITATIVE DISCLOSURES
+ABOUT MARKET RISK
+Information concerning market risk is contained in Item 7A “Quantitative and Qualitative Disclosures About Market Risk” in our Annual Report on Form 10-K for the year ended December 31, 2024. As of March 31, 2025, there were no material changes in our exposure to market risk from December 31, 2024 other than the following:
+Tariff Risks
+During the first quarter of 2025, various tariffs were announced on imports into the U.S. On April 2, 2025, the U.S. announced a new universal baseline tariff of 10%, plus significant additional country-specific tariffs for select trading partners, on all U.S. imports. The reciprocal country-specific tariffs were subsequently paused for 90 days on most countries. The imposition of the baseline 10% tariff will increase our costs of goods sold. We are conducting an internal review and are assessing how the increased reciprocal tariffs may affect operating profitability, business operations, and strategies to mitigate potential cost increases.
+ITEM 4.
+CONTROLS AND PROCEDURES
+We have established disclosure controls and procedures (as defined in Rules 13a-15(e) and 15d-15(e) under the Securities Exchange Act of 1934, as amended (Exchange Act)) that are designed to ensure that material information relating to us, including our consolidated subsidiaries, is made known to our Chief Executive Officer (principal executive officer) and Chief Financial Officer (principal financial officer) by others within our organization. Under the supervision and with the participation of our management, including our Chief Executive Officer and Chief Financial Officer, we conducted an evaluation of the effectiveness of our disclosure controls and procedures as of March 31, 2025. Based on this evaluation, our Chief Executive Officer and Chief Financial Officer have concluded that our disclosure controls and procedures were effective as of March 31, 2025.
+Management concluded that the unaudited condensed consolidated financial statements contained in this Quarterly Report on Form 10-Q fairly state, in all material respects, our financial condition, results of operations and cash flows for the periods presented in conformity with GAAP.
+Changes in Internal Controls over Financial Reporting
+There have been no changes in our internal control over financial reporting during the three months ended March 31, 2025, that have materially affected, or are reasonably likely to materially affect, our internal control over financial reporting.
+38
+Table of Contents
+PART II OTHER INFORMATION
+ITEM 1.
+LEGAL PROCEEDINGS
+We are involved in lawsuits, claims, and proceedings, including, but not limited to, patent, customer, labor and employment and commercial matters, which arise in the ordinary course of business. As of March 31, 2025, other than as disclosed in
+Note 20, Commitments and Contingencies
+in the Notes to our Unaudited Condensed Consolidated Financial Statements in this Quarterly Report on Form 10-Q, the Company is not party to any materia
+
+============================================================
+
+LIQUIDITY AND CAPITAL RESOURCES SECTION:
+
+LIQUIDITY AND CAPITAL RESOURCES
+Cash flows
+We anticipate that our existing cash and credit facilities will be sufficient to support our operating and investing needs for at least the next twelve months. Our future cash requirements could be affected by acquisitions that we may complete, purchases of our common stock or the payment of dividends in the future. Historically, we have used the liquidity generated from cash flow from operations, debt financings and issuances of common stock to finance our growth and operating needs. In the future, there are no assurances that we will continue to generate cash flow from operations or that additional financing alternatives will be available to us, if required, or, if available, will be obtained on terms favorable to us.
+We aggregate all bank accounts that are subject to our notional cash pooling arrangement into a single balance on our consolidated balance sheets. Our notional cash pooling arrangement is managed by a third-party financial institution and as of March 31, 2025, it was in a positive position. The cash and cash equivalent balance held outside of the United States in our foreign subsidiaries was primarily located in the Netherlands, Switzerland, and Hong Kong.
+36
+Table of Contents
+The following table presents our cash flows from operating activities, investing activities and financing activities for the periods presented (in millions):
+Three Months Ended
+March 31,
+2025
+2024
+Net cash provided by operating activities
+$
+65.0
+$
+21.8
+Net cash used in investing activities
+(26.1
+)
+(304.2
+)
+Net cash provided by (used in) financing activities
+(51.2
+)
+151.7
+Effect of exchange rate changes on cash, cash equivalents and restricted cash
+13.3
+(17.6
+)
+Net increase (decrease) in cash, cash equivalents and restricted cash
+$
+1.0
+$
+(148.3
+)
+Net cash provided by operating activities during the three months ended March 31, 2025, resulted primarily from consolidated net income adjusted for non-cash items of $55.7 million, and a change in operating assets and liabilities, net of acquisitions of $9.3 million. Net cash provided by operating activities during the three months ended March 31, 2024, resulted primarily from net income adjusted for non-cash items of $85.2 million, partially offset by a change in operating assets and liabilities, net of acquisitions and divestitures of $63.4 million.
+The decrease in consolidated net income adjusted for non-cash items was primarily due to lower income as result of unfavorable margin mix and increased costs related to 2024 acquisitions.
+In the first quarter of 2025, the change in operating assets and liabilities was not significant in the context of our working capital. In the first quarter of 2024, the net decrease in operating assets and liabilities was primarily attributable to an increase in inventory balances.
+Net cash used in investing activities during the three months ended March 31, 2025, resulted primarily from purchases of property, plant and equipment of $26.0 million. Net cash used in investing activities during the three months ended March 31, 2024, resulted primarily from acquisitions of $274.5 million, purchases of property, plant and equipment of $21.4 million, and minority investments of $10.0 million.
+Net cash used in financing activities during the three months ended March 31, 2025, was primarily from net repayments of our revolving line of credit of $28.0 million, repayments of long-term debt of $7.7 million, and cash paid for purchases of common stock under our repurchase program of $10.0 million, offset by proceeds from long-term debt of $2.9 million. Net cash provided by financing activities during the three months ended March 31, 2024, was primarily from cash received from the revolving line of credit of $268.9 million, offset by cash paid for repayment of the 2012 Note Purchase Agreement of $100.0 million, repayment of long term debt of $3.4 million, and dividend payments of $7.3 million.
+Share Repurchase Program
+During the three months ended March 31, 2025, the Company purchased a total of 200,731 shares at an aggregate cost of $10.0 million under the 2023 Repurchase Program. During the three months ended March 31, 2024, the Company did not purchase any shares under the 2023 Repurchase Program. Refer to
+Note 21, Shareholder's Equity,
+in the Notes to our Unaudited Condensed Consolidated Financial Statements in this Quarterly Report on Form 10-Q for more information on our share repurchase program.
+Credit Facilities
+As of March 31, 2025, we have total outstanding debt of $2.1 billion and a revolving credit facility that provides for up to $900.0 million of backup liquidity to finance working capital needs, refinance or reduce existing indebtedness, and for general corporate use. In addition, the facility provides for an uncommitted incremental facility whereby, under certain circumstances, we may, at our option, increase the amount of the revolving facility or incur term loans in an aggregate amount not to exceed $400 million. As of March 31, 2025, we
+were in compliance with all covenants of our debt agreements.
+For a summary of the fair and carrying values of our outstanding debt as of March 31, 2025, and December 31, 2024, refer to
+Note 15, Debt and Note 16, Fair Value of Financial Instruments
+to our unaudited condensed consolidated financial statements included in this report. For additional information on our outstanding debt and credit facility refer to
+Note 21 Debt
+, to our unaudited condensed consolidated financial statements included in our Annual Report on Form 10-K for the year ended December 31, 2024.
+37
+Table of Contents
+CRITICAL ACCOUNTING POLICIES AND ESTIMATES
+There have been no material changes to our critical accounting policies and estimates since December 31, 2024. Refer to our Annual Report on Form 10-K for the year ended December 31, 2024 for a discussion of our critical accounting policies.
+RECENT ACCOUNTING PRONOUNCEMENTS
+Information regarding recent accounting standard changes and developments is incorporated by reference from Part I, Item 1, Unaudited Condensed Consolidated Financial Statements, of this document and should be considered an integral part of this Item 2. Refer to
+Note 2, Recent Accounting Pronouncements
+in the Notes to the Unaudited Condensed Consolidated Financial Statements in this Quarterly Report on Form 10-Q for recently adopted and issued accounting standards.
+ITEM 3.
+QUANTITATIVE AND QUALITATIVE DISCLOSURES
+ABOUT MARKET RISK
+Information concerning market risk is contained in Item 7A “Quantitative and Qualitative Disclosures About Market Risk” in our Annual Report on Form 10-K for the year ended December 31, 2024. As of March 31, 2025, there were no material changes in our exposure to market risk from December 31, 2024 other than the following:
+Tariff Risks
+During the first quarter of 2025, various tariffs were announced on imports into the U.S. On April 2, 2025, the U.S. announced a new universal baseline tariff of 10%, plus significant additional country-specific tariffs for select trading partners, on all U.S. imports. The reciprocal country-specific tariffs were subsequently paused for 90 days on most countries. The imposition of the baseline 10% tariff will increase our costs of goods sold. We are conducting an internal review and are assessing how the increased reciprocal tariffs may affect operating profitability, business operations, and strategies to mitigate potential cost increases.
+ITEM 4.
+CONTROLS AND PROCEDURES
+We have established disclosure controls and procedures (as defined in Rules 13a-15(e) and 15d-15(e) under the Securities Exchange Act of 1934, as amended (Exchange Act)) that are designed to ensure that material information relating to us, including our consolidated subsidiaries, is made known to our Chief Executive Officer (principal executive officer) and Chief Financial Officer (principal financial officer) by others within our organization. Under the supervision and with the participation of our management, including our Chief Executive Officer and Chief Financial Officer, we conducted an evaluation of the effectiveness of our disclosure controls and procedures as of March 31, 2025. Based on this evaluation, our Chief Executive Officer and Chief Financial Officer have concluded that our disclosure controls and procedures were effective as of March 31, 2025.
+Management concluded that the unaudited condensed consolidated financial statements contained in this Quarterly Report on Form 10-Q fairly state, in all material respects, our financial condition, results of operations and cash flows for the periods presented in conformity with GAAP.
+Changes in Internal Controls over Financial Reporting
+There have been no changes in our internal control over financial reporting during the three months ended March 31, 2025, that have materially affected, or are reasonably likely to materially affect, our internal control over financial reporting.
+38
+Table of Contents
+PART II OTHER INFORMATION
+ITEM 1.
+LEGAL PROCEEDINGS
+We are involved in lawsuits, claims, and proceedings, including, but not limited to, patent, customer, labor and employment and commercial matters, which arise in the ordinary course of business. As of March 31, 2025, other than as disclosed in
+Note 20, Commitments and Contingencies
+in the Notes to our Unaudited Condensed Consolidated Financial Statements in this Quarterly Report on Form 10-Q, the Company is not party to any material pending legal proceedings, other than ordinary routine litigation incidental to the Company’s business, to which the Company or any of its subsidiaries is a party or of which any of their property is the subject. However, the outcome of any of these proceedings cannot be accurately predicted, and the ultimate resolution of any of these existing matters may have a material adverse effect on the Company's business or financial condition.
+In addition, we are subject to regulation by national, state and local government agencies in the United States and other countries in which we operate. From time to time, we are the subject of governmental investigations often involving regulatory, marketing and other business practices. These governmental investigations may result in the commencement of civil and criminal proceedings, fines, penalties and administrative remedies which could have a material adverse effect on our financial position, results of operations and/or liquidity.
+ITEM 1A.
+RISK FACTORS
+In addition to the other information set forth in this report, you should carefully consider the factors discussed in Part I, Item 1A. “Risk Factors” in our Annual Report on Form 10-K for the year ended December 31, 2024, which could materially affect our business, financial condition or future results. The risks described in this report and in our Annual Report on Form 10-K are not the only risks we face. Additional risks and uncertainties not currently known to us or that we currently deem to be immaterial also may materially adversely affect our business, financial condition and/or operating results.
+ITEM 2.
+UNREGISTERED SALES OF EQUITY SECURITIES AND USE OF PROCEEDS
+The following table provides information about purchases made by or on behalf of the Company or any “affiliated purchaser”, as defined in Rule 10b-18(a)(3) under the Exchange Act, during the quarter ended March 31, 2025, of shares of our Common Stock.
+Period
+Total Number of Shares Purchased (1)
+Average Price Paid per Share
+Total Number of Shares Purchased as Part of Publicly Announced Plans or Programs
+Maximum Number (or Approximate Dollar Value) of Shares that May Yet Be Purchased Under the Plans or Program (2)
+January 1 - January 31, 2025
+—
+$
+—
+—
+$
+369,922,324
+February 1 - February 28, 2025
+200,731
+49.81
+200,731
+359,922,966
+March 1 - March 31, 2025
+—
+$
+—
+—
+359,922,966
+200,731
+$
+49.81
+200,731
+$
+359,922,966
+(1)
+The Company purchased shares of common stock in accordance with the 2023 share repurchase program (the “2023 Repurchase Program”). The shares were purchased on the open market at prevailing prices. Under the 2023 Repurchase Program, the Company may repurchase shares pursuant to Rule 10b5-1 and/or Rule 10b-18 under the Exchange Act.
+(2)
+The 2023 Repurchase Program authorizes the purchases of the Company's common stock of up to $500.0 million from time to time over a two-year period, in amounts, at prices, and at such times as management deems appropriate, subject to market conditions, legal requirements and other considerations.
+39
+Table of Contents
+ITEM 5.
+OTHER INFORMATION
+Director and Officer Trading Arrangements
+During the quarter ended March 31, 2025, none of the Company’s directors or officers informed the Company of the
+adoption
+or
+termination
+of a “Rule 10b5-1 trading arrangement” or “non-Rule 10b5-1 trading arrangement”, as those terms are defined in Regulation S-K, Item 408
+except as follows:
+On
+February 18, 2025
+,
+Dr. Cynthia Friend
+, a member of the Company’s
+Board of Directors
+,
+adopted
+a trading plan intended to satisfy the affirmative defense conditions of Rule 10b5-1(c) of the Exchange Act. Dr. Friend’s plan provides for the sale of up to (a)
+5,192
+shares of the Company’s Common Stock underlying time-based restricted stock units and (b)
+4,300
+shares of Common Stock underlying stock options granted under an equity compensation plan. Any sales completed by Dr. Friend pursuant to the plan will be made in accordance with the prices and formulas set forth therein. The plan will terminate on the earlier of the date on which all the shares under the plan are sold and December 15, 2025, subject to earlier termination for certain specified events set forth in the plan.
+40
+Table of Contents
+ITEM 6.
+EXHIBITS
+Exhibit No.
+Description
+31.1*
+Certification by Chief Executive Officer pursuant to Section 302 of the Sarbanes-Oxley Act of 2002
+31.2*
+Certification by Chief Financial Officer pursuant to Section 302 of the Sarbanes-Oxley Act of 2002
+32.1*
+Certification by Chief Executive Officer and Chief Financial Officer pursuant to 18 U.S.C. Section 1350, as adopted pursuant to Section 906 of the Sarbanes-Oxley Act of 2002
+101.INS*
+Inline XBRL Instance Document
+101.SCH*
+Inline XBRL Taxonomy Extension Schema Document
+101.CAL*
+Inline XBRL Taxonomy Extension Calculation Linkbase Document
+101.DEF*
+Inline XBRL Taxonomy Extension Definition Linkbase Document
+101.LAB*
+Inline XBRL Taxonomy Extension Label Linkbase Document
+101.PRE*
+Inline XBRL Taxonomy Extension Presentation Linkbase Document
+104*
+The cover page from the Company’s Quarterly Report on Form 10-Q for the quarter ended March 31, 2025 has been formatted in Inline XBRL (included in Exhibit 101)
+* Filed or furnished herewith.
+41
+Table of Contents
+SIGNATURES
+Pursuant to the requirements of the Securities Exchange Act of 1934, the registrant has duly caused this report to be signed on its behalf by the undersigned, thereunto duly authorized.
+Date: May 7, 2025
+BRUKER CORPORATION
+By:
+/s/ FRANK H. LAUKIEN, PH.D.
+Frank H. Laukien, Ph.D.
+President, Chief Executive Officer and Chairman
+(Principal Executive Officer)
+Date: May 7, 2025
+By:
+/s/ GERALD N. HERMAN
+Gerald N. Herman
+Executive Vice President and Chief Financial Officer
+(Principal Financial Officer)
+Date: May 7, 2025
+By:
+/s/ THOMAS BURES
+Thomas Bures
+Chief Accounting Officer
+(Principal Accounting Officer)
+42

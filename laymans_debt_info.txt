@@ -1,0 +1,71 @@
+Layman's Terms Debt Analysis for BRKR (Verified)
+============================================================
+
+Here is the conservatively verified debt analysis organized by maturity date:
+
+$900M Revolving Credit Facility @ MISSING - CHECK CREDIT AGREEMENT mat. MARCH 31, 2025 (MISSING)  
+- Total commitments: $900 million  
+- Outstanding borrowings: $0 million  
+- Letters of credit: $0.3 million  
+- Total available: $899.7 million  
+- Lead bank: MISSING  
+
+$173.4M Lines of Credit (primarily in Germany and Switzerland) @ MISSING - CHECK CREDIT AGREEMENT mat. N/A (due upon demand)  
+- Total commitments: $173.4 million  
+- Outstanding borrowings: $0 million  
+- Lead bank: MISSING  
+
+$259.5M USD Term Loan @ MISSING - CHECK CREDIT AGREEMENT mat. 12/2026 (MISSING)  
+- Outstanding amount: $259.5 million  
+- THIS IS USAGE, CHECK CREDIT AGREEMENT FOR FULL FACILITY AMOUNT
+
+$165.3M CHF Notes due 2027 @ 2.56% mat. 2027 (MISSING)  
+- Amount: $165.3 million  
+- Interest rate: 2.56%  
+- Maturity: 2027  
+
+$335.7M CHF Notes due 2029 @ 1.01% (MISSING)  
+- Amount: $335.7 million  
+- Interest rate: 1.01%  
+- Maturity: 2029  
+
+$165.3M CHF Notes due 2029 @ 2.62% mat. 2029 (MISSING)  
+- Amount: $165.3 million  
+- Interest rate: 2.62%  
+- Maturity: 2029  
+
+$162.2M EUR Notes due 2031 @ 1.03% (EUR 150M) mat. 2031 (MISSING)  
+- Amount: $162.2 million (EUR 150 million)  
+- Interest rate: 1.03%  
+- Maturity: 2031  
+
+$169.5M CHF Notes due 2031 @ 2.71% mat. 2031 (MISSING)  
+- Amount: $169.5 million  
+- Interest rate: 2.71%  
+- Maturity: 2031  
+
+$339.1M CHF Notes due 2031 @ 0.88% mat. 2031 (MISSING)  
+- Amount: $339.1 million  
+- Interest rate: 0.88%  
+- Maturity: 2031  
+
+$56.5M CHF Notes due 2034 @ 2.56% mat. 4/2034 (MISSING)  
+- Amount: $56.5 million  
+- Interest rate: 2.56%  
+- Maturity: 4/2034  
+
+$221.5M CHF Notes due 2036 @ 2.62% (CHF 146M at 2.62%) mat. 2036 (MISSING)  
+- Total amount: $221.5 million (CHF 146 million)  
+- Interest rate: 2.62%  
+- Maturity: 2036  
+
+$209.1M CHF Notes due 2039 @ 2.71% (CHF 135M at 2.71%) mat. 2039 (MISSING)  
+- Total amount: $209.1 million (CHF 135 million)  
+- Interest rate: 2.71%  
+- Maturity: 2039  
+
+$14.9M USD Other Loans @ MISSING - CHECK CREDIT AGREEMENT mat. MISSING  
+- Outstanding amount: $14.9 million  
+- THIS IS USAGE, CHECK CREDIT AGREEMENT FOR FULL FACILITY AMOUNT
+
+**Note:** All amounts are in original currencies; USD equivalents are provided for context. MISSING indicates data not explicitly provided in the sections.
