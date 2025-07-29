@@ -259,6 +259,16 @@ input[type="text"]::placeholder {
     margin-top: 20px;
 }
 
+.result-section .error-message {
+    background: #fed7d7;
+    color: #c53030;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #feb2b2;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 10px;

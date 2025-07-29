@@ -11,7 +11,7 @@
     <div class="container">
         <header>
             <h1>AI Company Screener</h1>
-            <p>Search for current executive information including CEO, CFO, and Treasurer of any company.</p>
+            <p>Search for company information including executives, industry data, and financial analysis.</p>
         </header>
 
         <main>
@@ -31,29 +31,57 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Executive Roles to Search</label>
+                        <label for="tickerSymbol">Ticker Symbol</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-chart-line"></i>
+                            <input 
+                                type="text" 
+                                id="tickerSymbol" 
+                                placeholder="Enter ticker symbol (e.g., AAPL, MSFT)"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Functions to Run</label>
                         <div class="checkbox-group">
                             <label class="checkbox-item">
-                                <input type="checkbox" id="ceo" checked>
+                                <input type="checkbox" id="include_executives" checked>
                                 <span class="checkmark"></span>
-                                Chief Executive Officer (CEO)
+                                Executive Information (CEO, CFO, Treasurer)
                             </label>
                             <label class="checkbox-item">
-                                <input type="checkbox" id="cfo" checked>
+                                <input type="checkbox" id="include_emails" checked>
                                 <span class="checkmark"></span>
-                                Chief Financial Officer (CFO)
+                                Email Information
                             </label>
                             <label class="checkbox-item">
-                                <input type="checkbox" id="treasurer" checked>
+                                <input type="checkbox" id="include_industry" checked>
                                 <span class="checkmark"></span>
-                                Treasurer
+                                Industry Information
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="include_industry_blurb" checked>
+                                <span class="checkmark"></span>
+                                Industry Description
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="include_10q_link" checked>
+                                <span class="checkmark"></span>
+                                Latest 10-Q Filing Link
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="include_debt_liquidity" checked>
+                                <span class="checkmark"></span>
+                                Debt and Liquidity Analysis
                             </label>
                         </div>
                     </div>
 
                     <button type="submit" class="search-btn">
                         <i class="fas fa-search"></i>
-                        Search Executive Information
+                        Search Company Information
                     </button>
                 </form>
             </div>
@@ -67,7 +95,7 @@
 
             <div id="loading" class="loading" style="display: none;">
                 <div class="spinner"></div>
-                <p>Searching for executive information...</p>
+                <p>Searching for company information...</p>
             </div>
         </main>
     </div>

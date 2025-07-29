@@ -17,7 +17,7 @@ try:
 except ImportError:
     openai = None
 
-GENERIC_EMAIL_PREFIXES = {"pr", "info", "privacy", "investor", "investors", "contact", "support", "admin", "help", "careers", "jobs", "media", "press", "webmaster", "office", "general", "ir", "corp", "ceo", "cfo", "treasurer"}
+GENERIC_EMAIL_PREFIXES = {"pr", "info", "privacy", "investor", "investors", "contact", "support", "admin", "help", "careers", "jobs", "media", "press", "webmaster", "office", "general", "ir", "corp", "sustainability", "esg", "environmental", "hr", "humanresources", "legal", "compliance", "marketing", "sales", "business", "service", "services", "team", "hello", "noreply", "no-reply", "donotreply", "do-not-reply", "postmaster", "abuse", "security", "spam", "feedback", "newsletter", "updates", "alerts", "notifications", "system", "ceo", "cfo", "treasurer"}
 
 def is_generic_email(email):
     local = email.split('@')[0].lower()
@@ -34,12 +34,12 @@ def is_generic_email(email):
     return False
 
 # Helper to extract all non-generic emails from snippets
-def extract_all_non_generic_emails(snippets, domain):
+def extract_all_non_generic_emails(snippets, domain, actual_names=None):
     email_pattern = rf'([a-zA-Z0-9_.+-]+{re.escape(domain)})'
     emails = set()
     for snippet in snippets:
         for email in re.findall(email_pattern, snippet):
-            if not is_generic_email(email):
+            if not is_generic_email(email) and not is_fake_or_test_email(email, actual_names):
                 emails.add(email)
     return list(emails)
 
@@ -207,17 +207,36 @@ def gpt_infer_format(name, emails):
             use_llm_client = False
         email_list_str = "\n".join(emails)
         prompt = f"""
-Given the name '{name}' and the following emails from the same company, pick the one that best matches a real employee's email (not a generic or department address), and reply with only the most likely email format used by this company for employees. Reply with only the format string, e.g., 'first_initiallast', 'first.last', 'firstlast', 'first', 'last', 'first_initial.last', etc. Do not explain, just reply with the format string.
+Given the name '{name}' and the following emails from the same company, determine the email format pattern used by this company. 
+
+IMPORTANT: 
+1. Reply with ONLY one of these exact format strings:
+   - first.last (e.g., john.smith@company.com)
+   - firstlast (e.g., johnsmith@company.com) 
+   - first_initiallast (e.g., jsmith@company.com)
+   - first_initial.last (e.g., j.smith@company.com)
+   - first (e.g., john@company.com)
+   - last (e.g., smith@company.com)
+   - first.last_initial (e.g., john.s@company.com)
+   - first_initiallast_initial (e.g., js@company.com)
+
+2. IGNORE generic/department emails like info@, pr@, sustainability@, contact@, etc.
+3. IGNORE random/fake emails like abcdefg@, qwerty@, test123@, etc.
+4. Focus ONLY on emails that appear to be real person names.
+5. Do NOT reply with the email local part (like "justins" or "marc"). Reply ONLY with the format pattern.
 
 Emails:
 {email_list_str}
 
 Examples:
 Name: John Smith, Emails: john.smith@company.com, info@company.com -> first.last
-Name: Jane Doe, Emails: jdoe@company.com, pr@company.com -> first_initiallast
+Name: Jane Doe, Emails: jdoe@company.com, pr@company.com -> first_initiallast  
 Name: Robert Brown, Emails: rbrown@company.com, support@company.com -> first_initiallast
 Name: Mary Ann Lee, Emails: mary.lee@company.com, contact@company.com -> first.last
 Name: Sarah Prillman, Emails: sprillman@company.com, admin@company.com -> first_initiallast
+Name: Justin Smith, Emails: justins@company.com, info@company.com -> firstlast
+
+If all emails are generic or fake (like info@, abcdefg@, etc.), reply with "NO_VALID_FORMAT"
 """
         if use_llm_client:
             response = client.chat.completions.create(
@@ -235,26 +254,167 @@ Name: Sarah Prillman, Emails: sprillman@company.com, admin@company.com -> first_
             )
             content = response.choices[0].message.content if response.choices and response.choices[0].message and response.choices[0].message.content else None
         if content:
-            return content.split()[0].strip().replace('"', '').replace("'", "")
+            format_str = content.split()[0].strip().replace('"', '').replace("'", "")
+            # Handle case where GPT says no valid format found
+            if format_str == "NO_VALID_FORMAT":
+                print(f"GPT found no valid format from generic emails")
+                return None
+            # Validate that the format is one we can actually construct
+            elif format_str in VALID_EMAIL_FORMATS:
+                return format_str
+            else:
+                print(f"GPT returned invalid format: {format_str}, falling back to inference")
+                return None
         else:
             return None
     except Exception as e:
         print(f"GPT fallback failed: {e}")
         return None
 
-# Add a set of fake/test names to filter
-FAKE_TEST_NAMES = {"jane.doe", "john.smith", "test.user", "test", "example", "demo", "foo.bar", "foo", "bar", "sample.user", "sample"}
+# Valid email formats that can be constructed
+VALID_EMAIL_FORMATS = {
+    "first.last", "firstlast", "f.last", "first_initial.last", "first_initiallast", 
+    "first", "last", "first.last_initial", "first_initiallast_initial"
+}
 
-def is_fake_or_test_email(email):
+# Add a comprehensive set of fake/test names and patterns to filter
+FAKE_TEST_NAMES = {
+    "jane.doe", "john.smith", "test.user", "test", "example", "demo", "foo.bar", "foo", "bar", 
+    "sample.user", "sample", "user", "admin", "guest", "anonymous", "unknown", "placeholder",
+    "smith.john", "doe.jane", "smith", "doe", "jane", "john", "jane.doe", "john.smith",
+    "testuser", "example.user", "demo.user", "sample.user", "fake.user", "dummy.user",
+    "last", "first", "name", "email", "contact", "info", "support", "help", "service"
+}
+
+# Common fake email patterns that should be filtered out
+FAKE_EMAIL_PATTERNS = [
+    r'^test',  # anything starting with test
+    r'^demo',  # anything starting with demo
+    r'^example',  # anything starting with example
+    r'^sample',  # anything starting with sample
+    r'^fake',  # anything starting with fake
+    r'^dummy',  # anything starting with dummy
+    r'^user$',  # just "user"
+    r'^admin$',  # just "admin"
+    r'^guest$',  # just "guest"
+    r'^anonymous$',  # just "anonymous"
+    r'^unknown$',  # just "unknown"
+    r'^placeholder$',  # just "placeholder"
+    r'^last$',  # just "last"
+    r'^first$',  # just "first"
+    r'^name$',  # just "name"
+    r'^email$',  # just "email"
+    r'^contact$',  # just "contact"
+    r'^info$',  # just "info"
+    r'^support$',  # just "support"
+    r'^help$',  # just "help"
+    r'^service$',  # just "service"
+    r'^smith\.john$',  # specific fake patterns
+    r'^doe\.jane$',
+    r'^jane\.doe$',
+    r'^john\.smith$',
+    r'^j\.smith$',  # j.smith (unless actual person is John Smith)
+    r'^j\.doe$',    # j.doe (unless actual person is Jane Doe)
+]
+
+def is_fake_or_test_email(email, actual_names=None):
+    """
+    Check if an email is fake/test based on patterns and actual names.
+    
+    Args:
+        email: The email to check
+        actual_names: List of actual names to compare against (to avoid filtering real names)
+    """
     local = email.split('@')[0].lower()
+    
     # Remove numbers and special chars for robust matching
     local_clean = re.sub(r'[^a-z.]', '', local)
+    
+    # Quick check: if it's just a common word, it's likely fake
+    common_words = {"last", "first", "name", "email", "contact", "info", "support", "help", "service", "user", "admin", "guest", "test", "demo", "example", "sample"}
+    if local_clean in common_words:
+        return True
+    
+    # Check for random/fake emails (like abcdefg, qwerty, etc.)
+    # These are clearly not real person names
+    random_patterns = [
+        r'^[a-z]{6,}$',  # 6+ consecutive letters (like abcdefg)
+        r'^[a-z]{3,}[0-9]{2,}$',  # letters followed by numbers (like abc123)
+        r'^[0-9]{2,}[a-z]{3,}$',  # numbers followed by letters (like 123abc)
+        r'^[a-z]+[0-9]+[a-z]+$',  # alternating letters and numbers
+        r'^[a-z]{3,}[0-9]{1,}[a-z]*$',  # letters + numbers + optional letters
+        r'^[0-9]{1,}[a-z]{3,}[0-9]*$',  # numbers + letters + optional numbers
+        r'^qwerty$',  # common fake patterns
+        r'^asdfgh$',
+        r'^zxcvbn$',
+        r'^abcdef$',
+        r'^abcdefg$',
+        r'^test123$',
+        r'^demo123$',
+        r'^user123$',
+        r'^admin123$'
+    ]
+    
+    for pattern in random_patterns:
+        if re.match(pattern, local_clean):
+            return True
+    
+    # Check for emails that are too short to be real names (likely fake)
+    if len(local_clean) < 3:
+        return True
+    
+    # Check for emails that are too long to be real names (likely fake)
+    if len(local_clean) > 20:
+        return True
+    
+    # Check for emails with no vowels (likely fake)
+    if not any(vowel in local_clean for vowel in 'aeiou'):
+        return True
+    
+    # If we have actual names, check if this might be a real person first
+    if actual_names:
+        for name in actual_names:
+            if name:
+                name_obj = HumanName(name)
+                first = name_obj.first.lower() if name_obj.first else ""
+                last = name_obj.last.lower() if name_obj.last else ""
+                
+                # Check if the email matches the actual person's name
+                if first and last:
+                    possible_formats = [
+                        f"{first}.{last}",
+                        f"{first}{last}",
+                        f"{first[0]}.{last}",
+                        f"{first[0]}{last}",
+                        f"{first}",
+                        f"{last}"
+                    ]
+                    if local_clean in possible_formats:
+                        return False  # This is likely a real person
+    
+    # Check against fake test names
     if local_clean in FAKE_TEST_NAMES:
         return True
-    # Also check for patterns like 'test', 'demo', etc. in the local part
+    
+    # Check against fake patterns (but be more careful with j.smith, j.doe patterns)
+    for pattern in FAKE_EMAIL_PATTERNS:
+        if re.match(pattern, local_clean):
+            # Special handling for j.smith and j.doe patterns
+            if pattern in [r'^j\.smith$', r'^j\.doe$']:
+                # Only filter if we don't have actual names that could match
+                if not actual_names or not any(
+                    name and HumanName(name).first and HumanName(name).first.lower().startswith('j')
+                    for name in actual_names
+                ):
+                    return True
+            else:
+                return True
+    
+    # Check for patterns like 'test', 'demo', etc. in the local part
     for fake in FAKE_TEST_NAMES:
         if fake in local_clean:
             return True
+    
     return False
 
 def scrape_emails(company_name, cfo_name, treasurer_name, ceo_name):
@@ -296,16 +456,51 @@ def scrape_emails(company_name, cfo_name, treasurer_name, ceo_name):
 
     if not known_emails:
         # Fallback: try to extract all non-generic emails and infer format
-        all_emails = extract_all_non_generic_emails(all_snippets, domain)
-        # Filter out fake/test emails
-        all_emails = [e for e in all_emails if not is_fake_or_test_email(e)]
+        actual_names = [name for name in [cfo_name, treasurer_name, ceo_name] if name and name.lower() != "same"]
+        all_emails = extract_all_non_generic_emails(all_snippets, domain, actual_names)
         fmt = None
+        source_method = "unknown"
+        
         if all_emails:
-            # Try to infer from the first one
+            # Check if all emails are generic
+            all_generic = all(is_generic_email(email) for email in all_emails)
+            if all_generic:
+                return {"error": "Only generic emails found (no real person emails available)"}
+            
+            # First, try to infer format from the source email with any of the actual names
+            fmt = None
+            source_method = "unknown"
+            
+            # Try with CFO name first
             fmt = infer_format_from_email(all_emails[0], cfo_name)
+            if fmt:
+                source_method = "inferred from email with CFO name"
+            
+            # If that didn't work, try with other actual names
+            if not fmt and actual_names:
+                for name in actual_names:
+                    if name != cfo_name:
+                        fmt = infer_format_from_email(all_emails[0], name)
+                        if fmt:
+                            source_method = f"inferred from email with {name}"
+                            break
+            
+            # If still no format, try GPT fallback
             if not fmt:
-                # Try GPT fallback with all non-generic emails
                 fmt = gpt_infer_format(cfo_name, all_emails)
+                if fmt:
+                    source_method = "gpt-inferred format"
+            
+            # If GPT failed, try common formats as last resort
+            if not fmt:
+                # Try common formats that might work
+                for test_fmt in ["firstlast", "first.last", "first_initiallast", "first"]:
+                    test_email = construct_email(cfo_name, domain, test_fmt)
+                    if test_email:
+                        fmt = test_fmt
+                        source_method = f"fallback format: {test_fmt}"
+                        break
+            
             if fmt:
                 cfo_email = construct_email(cfo_name, domain, fmt) if cfo_name and cfo_name.lower() != "same" else None
                 treasurer_email = construct_email(treasurer_name, domain, fmt) if treasurer_name and treasurer_name.lower() != "same" else None
@@ -315,22 +510,31 @@ def scrape_emails(company_name, cfo_name, treasurer_name, ceo_name):
                     "cfo_email": cfo_email,
                     "treasurer_email": treasurer_email,
                     "source_email": all_emails[0] if all_emails else None,
-                    "source": "gpt-inferred format" if not infer_format_from_email(all_emails[0], cfo_name) else "inferred from email local part"
+                    "source": source_method
                 }
         return {"error": "No real emails found"}
 
     # Step 4: Detect email format from the first valid pair
     # Filter known_emails for fake/test emails
-    filtered_known_emails = [(n, e) for n, e in known_emails if not is_fake_or_test_email(e)]
+    actual_names = [name for name in [cfo_name, treasurer_name, ceo_name] if name and name.lower() != "same"]
+    filtered_known_emails = [(n, e) for n, e in known_emails if not is_fake_or_test_email(e, actual_names)]
     if not filtered_known_emails:
         return {"error": "No real emails found (all were fake/test)"}
     name, email = filtered_known_emails[0]
     fmt = detect_email_format(name, email)
     if not fmt:
         # Try GPT fallback with all non-generic emails
-        all_emails = extract_all_non_generic_emails(all_snippets, domain)
-        all_emails = [e for e in all_emails if not is_fake_or_test_email(e)]
+        all_emails = extract_all_non_generic_emails(all_snippets, domain, actual_names)
         fmt = gpt_infer_format(name, all_emails) if all_emails else None
+        
+        # If GPT failed, try common formats as last resort
+        if not fmt:
+            for test_fmt in ["firstlast", "first.last", "first_initiallast", "first"]:
+                test_email = construct_email(cfo_name, domain, test_fmt)
+                if test_email:
+                    fmt = test_fmt
+                    break
+        
         if not fmt:
             return {"error": "Could not detect email format"}
     # Step 5: Construct emails

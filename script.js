@@ -8,17 +8,26 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         
         const companyName = document.getElementById('companyName').value.trim();
-        const ceoChecked = document.getElementById('ceo').checked;
-        const cfoChecked = document.getElementById('cfo').checked;
-        const treasurerChecked = document.getElementById('treasurer').checked;
+        const tickerSymbol = document.getElementById('tickerSymbol').value.trim().toUpperCase();
+        const includeExecutives = document.getElementById('include_executives').checked;
+        const includeEmails = document.getElementById('include_emails').checked;
+        const includeIndustry = document.getElementById('include_industry').checked;
+        const includeIndustryBlurb = document.getElementById('include_industry_blurb').checked;
+        const include10qLink = document.getElementById('include_10q_link').checked;
+        const includeDebtLiquidity = document.getElementById('include_debt_liquidity').checked;
 
         if (!companyName) {
             alert('Please enter a company name');
             return;
         }
 
-        if (!ceoChecked && !cfoChecked && !treasurerChecked) {
-            alert('Please select at least one executive role to search');
+        if (!tickerSymbol) {
+            alert('Please enter a ticker symbol');
+            return;
+        }
+
+        if (!includeExecutives && !includeEmails && !includeIndustry && !includeIndustryBlurb && !include10qLink && !includeDebtLiquidity) {
+            alert('Please select at least one function to run');
             return;
         }
 
@@ -27,21 +36,24 @@ document.addEventListener('DOMContentLoaded', function() {
         resultsContainer.style.display = 'none';
 
         try {
-            // Extract ticker from company name (you might want to implement a ticker lookup)
-            const ticker = extractTickerFromCompanyName(companyName);
-            
-            if (!ticker) {
-                throw new Error('Could not determine ticker symbol for this company. Please try with a more specific company name.');
-            }
+            // Build query parameters
+            const params = new URLSearchParams({
+                include_executives: includeExecutives,
+                include_emails: includeEmails,
+                include_industry: includeIndustry,
+                include_industry_blurb: includeIndustryBlurb,
+                include_10q_link: include10qLink,
+                include_debt_liquidity: includeDebtLiquidity
+            });
 
-            const response = await fetch(`http://localhost:8000/company_info/${encodeURIComponent(companyName)}/${ticker}`);
+            const response = await fetch(`http://localhost:8000/company_info/${encodeURIComponent(companyName)}/${tickerSymbol}?${params}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
-            displayResults(data, companyName);
+            displayResults(data, companyName, tickerSymbol);
 
         } catch (error) {
             console.error('Error:', error);
@@ -51,42 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function extractTickerFromCompanyName(companyName) {
-        // This is a simple mapping - in a real application, you'd want a more sophisticated approach
-        const tickerMap = {
-            'apple': 'AAPL',
-            'microsoft': 'MSFT',
-            'google': 'GOOGL',
-            'amazon': 'AMZN',
-            'tesla': 'TSLA',
-            'netflix': 'NFLX',
-            'meta': 'META',
-            'nvidia': 'NVDA',
-            'newmarket': 'NEU',
-            'synnex': 'SNX',
-            'ingredion': 'INGR',
-            'bruker': 'BRKR'
-        };
-
-        const normalizedName = companyName.toLowerCase().replace(/[^a-z]/g, '');
-        
-        for (const [key, ticker] of Object.entries(tickerMap)) {
-            if (normalizedName.includes(key)) {
-                return ticker;
-            }
-        }
-
-        // If no match found, try to extract from the company name
-        const words = companyName.split(' ');
-        if (words.length > 0) {
-            // Take first word and convert to uppercase (simple approach)
-            return words[0].toUpperCase().substring(0, 4);
-        }
-
-        return null;
-    }
-
-    function displayResults(data, companyName) {
+    function displayResults(data, companyName, tickerSymbol) {
         resultsContent.innerHTML = '';
 
         // Company Overview
@@ -95,8 +72,9 @@ document.addEventListener('DOMContentLoaded', function() {
         overviewSection.innerHTML = `
             <h3>Company Overview</h3>
             <p><strong>Company:</strong> ${companyName}</p>
-            <p><strong>Industry:</strong> ${data.industry || 'Not available'}</p>
-            <p><strong>Industry Description:</strong> ${data.industry_blurb || 'Not available'}</p>
+            <p><strong>Ticker:</strong> ${tickerSymbol}</p>
+            ${data.industry ? `<p><strong>Industry:</strong> ${data.industry}</p>` : ''}
+            ${data.industry_blurb ? `<p><strong>Industry Description:</strong> ${data.industry_blurb}</p>` : ''}
         `;
         resultsContent.appendChild(overviewSection);
 
@@ -104,12 +82,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.executives) {
             const executivesSection = document.createElement('div');
             executivesSection.className = 'result-section';
-            executivesSection.innerHTML = `
-                <h3>Executive Information</h3>
-                ${data.executives.ceo ? `<p><strong>CEO:</strong> ${data.executives.ceo}</p>` : ''}
-                ${data.executives.cfo ? `<p><strong>CFO:</strong> ${data.executives.cfo}</p>` : ''}
-                ${data.executives.treasurer ? `<p><strong>Treasurer:</strong> ${data.executives.treasurer}</p>` : ''}
-            `;
+            
+            if (data.executives.error) {
+                executivesSection.innerHTML = `
+                    <h3>Executive Information</h3>
+                    <p class="error-message">${data.executives.error}</p>
+                `;
+            } else {
+                executivesSection.innerHTML = `
+                    <h3>Executive Information</h3>
+                    ${data.executives.ceo ? `<p><strong>CEO:</strong> ${data.executives.ceo}</p>` : ''}
+                    ${data.executives.cfo ? `<p><strong>CFO:</strong> ${data.executives.cfo}</p>` : ''}
+                    ${data.executives.treasurer ? `<p><strong>Treasurer:</strong> ${data.executives.treasurer}</p>` : ''}
+                `;
+            }
             resultsContent.appendChild(executivesSection);
         }
 
@@ -117,34 +103,65 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.emails) {
             const emailsSection = document.createElement('div');
             emailsSection.className = 'result-section';
-            emailsSection.innerHTML = `
-                <h3>Email Information</h3>
-                ${data.emails.cfo_email ? `<p><strong>CFO Email:</strong> ${data.emails.cfo_email}</p>` : ''}
-                ${data.emails.treasurer_email ? `<p><strong>Treasurer Email:</strong> ${data.emails.treasurer_email}</p>` : ''}
-                ${data.emails.domain ? `<p><strong>Email Domain:</strong> ${data.emails.domain}</p>` : ''}
-                ${data.emails.format ? `<p><strong>Email Format:</strong> ${data.emails.format}</p>` : ''}
-            `;
+            
+            if (data.emails.error) {
+                emailsSection.innerHTML = `
+                    <h3>Email Information</h3>
+                    <p class="error-message">${data.emails.error}</p>
+                `;
+            } else {
+                let emailContent = '<h3>Email Information</h3>';
+                
+                if (data.emails.cfo_email) {
+                    emailContent += `<p><strong>CFO Email:</strong> ${data.emails.cfo_email}</p>`;
+                }
+                if (data.emails.treasurer_email) {
+                    emailContent += `<p><strong>Treasurer Email:</strong> ${data.emails.treasurer_email}</p>`;
+                }
+                if (data.emails.domain) {
+                    emailContent += `<p><strong>Email Domain:</strong> ${data.emails.domain}</p>`;
+                }
+                if (data.emails.format) {
+                    emailContent += `<p><strong>Email Format:</strong> ${data.emails.format}</p>`;
+                }
+                if (data.emails.source_email) {
+                    emailContent += `<p><strong>Source Email:</strong> ${data.emails.source_email}</p>`;
+                }
+                if (data.emails.source_name) {
+                    emailContent += `<p><strong>Source Name:</strong> ${data.emails.source_name}</p>`;
+                }
+                if (data.emails.source) {
+                    emailContent += `<p><strong>Detection Method:</strong> ${data.emails.source}</p>`;
+                }
+                
+                // If no emails were found, show a message
+                if (!data.emails.cfo_email && !data.emails.treasurer_email) {
+                    emailContent += `<p style="color: #666; font-style: italic;">No specific executive emails found. Domain and format information may still be available.</p>`;
+                }
+                
+                emailsSection.innerHTML = emailContent;
+            }
             resultsContent.appendChild(emailsSection);
         }
 
         // Debt and Liquidity Information
-        if (data.debt_liquidity_summary && data.debt_liquidity_summary.length > 0) {
+        if (data.debt_liquidity_summary) {
             const debtSection = document.createElement('div');
             debtSection.className = 'result-section';
-            debtSection.innerHTML = `
-                <h3>Debt and Liquidity Analysis</h3>
-                <div class="debt-summary">
-                    ${data.debt_liquidity_summary.map(item => {
-                        if (item.startsWith('-')) {
-                            return `<p style="margin-left: 20px; color: #666;">${item}</p>`;
-                        } else if (item.startsWith('$')) {
-                            return `<div class="debt-item"><strong>${item}</strong></div>`;
-                        } else {
-                            return `<p>${item}</p>`;
-                        }
-                    }).join('')}
-                </div>
-            `;
+            
+            if (Array.isArray(data.debt_liquidity_summary) && data.debt_liquidity_summary.length > 0) {
+                debtSection.innerHTML = `
+                    <h3>Debt and Liquidity Analysis</h3>
+                    <div class="debt-summary">
+                        ${formatDebtAnalysis(data.debt_liquidity_summary)}
+                    </div>
+                `;
+            } else if (typeof data.debt_liquidity_summary === 'string' && data.debt_liquidity_summary.startsWith('Error:')) {
+                debtSection.innerHTML = `
+                    <h3>Debt and Liquidity Analysis</h3>
+                    <p class="error-message">${data.debt_liquidity_summary}</p>
+                `;
+            }
             resultsContent.appendChild(debtSection);
         }
 
@@ -152,10 +169,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.latest_10q_link) {
             const linkSection = document.createElement('div');
             linkSection.className = 'result-section';
-            linkSection.innerHTML = `
-                <h3>Latest 10-Q Filing</h3>
-                <p><a href="${data.latest_10q_link}" target="_blank" style="color: #4299e1; text-decoration: none;">View Latest 10-Q Filing</a></p>
-            `;
+            
+            if (data.latest_10q_link.startsWith('Error:')) {
+                linkSection.innerHTML = `
+                    <h3>Latest 10-Q Filing</h3>
+                    <p class="error-message">${data.latest_10q_link}</p>
+                `;
+            } else {
+                linkSection.innerHTML = `
+                    <h3>Latest 10-Q Filing</h3>
+                    <p><a href="${data.latest_10q_link}" target="_blank" style="color: #4299e1; text-decoration: none;">View Latest 10-Q Filing</a></p>
+                `;
+            }
             resultsContent.appendChild(linkSection);
         }
 
@@ -169,5 +194,49 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         resultsContainer.style.display = 'block';
+    }
+
+    function formatDebtAnalysis(debtItems) {
+        let formattedHtml = '';
+        
+        for (let i = 0; i < debtItems.length; i++) {
+            const item = debtItems[i];
+            
+            // Skip empty items
+            if (!item || item.trim() === '') continue;
+            
+            // Supporting details (start with -)
+            if (item.startsWith('-')) {
+                formattedHtml += `<p style="margin-left: 20px; color: #666;">${item}</p>`;
+            }
+            // Main debt facilities (start with $ and contain facility details)
+            else if (item.startsWith('$') && (
+                item.includes('@') || 
+                item.includes('mat.') || 
+                item.includes('Term Loan') ||
+                item.includes('Revolving') ||
+                item.includes('Senior Notes') ||
+                item.includes('Credit Facility') ||
+                item.includes('Bonds') ||
+                item.includes('Notes') ||
+                item.includes('Arrangement')
+            )) {
+                formattedHtml += `<div class="debt-item"><strong>${item}</strong></div>`;
+            }
+            // Section headers (bold text that doesn't start with $ or -)
+            else if (item.startsWith('**') && item.endsWith('**')) {
+                formattedHtml += `<p><strong>${item.replace(/\*\*/g, '')}</strong></p>`;
+            }
+            // Separator lines
+            else if (item.includes('=')) {
+                formattedHtml += `<hr style="margin: 15px 0; border: none; border-top: 1px solid #e2e8f0;">`;
+            }
+            // Regular text
+            else {
+                formattedHtml += `<p>${item}</p>`;
+            }
+        }
+        
+        return formattedHtml;
     }
 }); 
