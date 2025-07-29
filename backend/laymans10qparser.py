@@ -228,7 +228,69 @@ Extract ONLY the facilities that are clearly documented in the above sections. P
         return f"Error extracting debt-related text: {str(e)}"
 
 
+def enhance_debt_extraction_with_context(initial_extraction: str, additional_context: str, debug=False):
+    """
+    Enhance the initial debt extraction with additional context from the middle 70% of the 10-Q.
+    This function asks the LLM to add more supporting info for facilities found and identify any missed facilities.
+    """
+    prompt = f"""
+You are a financial document expert. I have an initial debt extraction from a 10-Q filing, and I want you to enhance it with additional context from the middle section of the document.
 
+INITIAL DEBT EXTRACTION:
+{initial_extraction}
+
+ADDITIONAL CONTEXT (Middle 70% of 10-Q):
+{additional_context}
+
+YOUR TASK:
+1. **Review the initial extraction** - identify all debt facilities that were found
+2. **Add supporting information** - for each facility found, add any additional details from the additional context (interest rates, maturity dates, lead banks, covenants, etc.)
+3. **Find missed facilities** - identify any debt facilities that were missed in the initial extraction but are mentioned in the additional context
+4. **Enhance existing facilities** - add any missing details like interest rates, maturity dates, or lead banks that are mentioned in the additional context
+
+CRITICAL INSTRUCTIONS:
+- DO NOT remove any facilities from the initial extraction
+- DO NOT change facility amounts unless you find explicit evidence they are wrong
+- ONLY add information that is explicitly stated in the additional context
+- If you find new facilities, add them with the same format as the existing ones
+- If you find additional details for existing facilities, add them as supporting information
+- Be extremely precise - only use information that is explicitly stated
+
+OUTPUT FORMAT:
+- Keep the same structure as the initial extraction
+- Add supporting details under each facility
+- Add any new facilities you find
+- Use the same format for new facilities as existing ones
+
+Return the enhanced debt extraction with all additional information found:
+"""
+
+    try:
+        if debug:
+            print(f"🤖 Calling OpenAI API to enhance debt extraction with additional context")
+            print(f"📄 Initial extraction length: {len(initial_extraction):,} characters")
+            print(f"📄 Additional context length: {len(additional_context):,} characters")
+        
+        response = llm_client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {"role": "system", "content": "You are a precise financial document analyzer. Enhance debt extractions with additional context while preserving all existing information."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.1  # Low temperature for consistent enhancement
+        )
+        
+        enhanced_text = response.choices[0].message.content.strip()
+        
+        if debug:
+            print(f"✅ Debt extraction enhancement successful")
+        
+        return enhanced_text
+        
+    except Exception as e:
+        if debug:
+            print(f"❌ Debt extraction enhancement failed: {e}")
+        return f"Error enhancing debt extraction: {str(e)}"
 
 
 def extract_credit_facilities_from_liquidity(text_content: str):
@@ -393,6 +455,7 @@ INSTRUCTIONS:
 3. Only add usage warnings where clearly warranted
 4. Only remove interest rates if clearly not in source
 5. Preserve everything else exactly as-is
+6. Return only the debt information, no other filler text such as "heres the debt information" or "heres the debt information in layman's terms" or anything like that.
 
 Return the conservatively verified debt analysis organized by maturity:
 """
@@ -407,7 +470,7 @@ Return the conservatively verified debt analysis organized by maturity:
                 {"role": "system", "content": "You are a conservative financial verification expert. Make MINIMAL changes - only organize by maturity and flag clear usage amounts. Preserve ALL facilities and information."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.2  # Low temperature for accuracy
+            temperature=0.3  # Low temperature for accuracy
         )
         
         verified_text = response.choices[0].message.content.strip()
@@ -480,17 +543,19 @@ def download_and_parse_10q(ticker: str):
         return None, None
 
 
-if __name__ == "__main__":
-    # Test debt extraction for BRKR
-    ticker = "INGR"
-    debug = False  # Enable debug output
+def run_debt_extraction_pipeline(ticker: str, debug=False):
+    """
+    Run the complete debt extraction pipeline for a given ticker.
+    Returns the final layman's terms debt analysis as a list of strings.
+    """
+    print(f"🔍 Starting debt extraction pipeline for {ticker}")
     
     # Step 1 & 2: Download and parse
     soup, link = download_and_parse_10q(ticker)
     
     if soup is None:
-        print("❌ Failed to download and parse 10-Q document")
-        exit(1)
+        print(f"❌ Failed to download and parse 10-Q document for {ticker}")
+        return []
     
     # Step 3: Extract debt-related text using focused approach
     print(f"🔍 Step 3: Extracting debt information with focused note section parsing")
@@ -501,68 +566,52 @@ if __name__ == "__main__":
     # Extract specific debt note sections (most accurate)
     debt_sections = extract_debt_note_sections(soup, text_content)
     print(f"📋 Found {len(debt_sections)} debt note sections")
-    for section in debt_sections:
-        print(f"   - {section['header']}")
-
+    if debug:
+        for section in debt_sections:
+            print(f"   - {section['header']}")
     
     # Extract debt tables as supporting data
     debt_tables = extract_debt_tables_focused(soup)
     print(f"📊 Found {len(debt_tables)} debt-related tables")
     
     # Extract debt information using focused sections + tables
-    extracted_debt_text = extract_debt_related_text_focused(text_content, debt_sections, debt_tables, debug=True)
+    extracted_debt_text = extract_debt_related_text_focused(text_content, debt_sections, debt_tables, debug=debug)
     
-    # Step 4: Extract liquidity section and credit facilities section
-    print(f"\n🔍 Step 4: Extracting liquidity and credit facilities sections")
+    # Step 4: Enhance the initial extraction with middle 70% of 10-Q
+    print(f"\n🔍 Step 4: Enhancing debt extraction with middle 70% of 10-Q")
     
-    # Extract the full liquidity section
-    liquidity_section = extract_liquidity_section(text_content)
+    # Get the middle 70% of the document for additional context
+    total_lines = len(text_content.split('\n'))
+    start_line = int(total_lines * 0.15)  # Start at 15%
+    end_line = int(total_lines * 0.85)    # End at 85%
     
-    # Extract the specific Credit Facilities section (contains $900M revolver details)
-    credit_facilities_section = extract_credit_facilities_from_liquidity(text_content)
+    lines = text_content.split('\n')
+    middle_section = '\n'.join(lines[start_line:end_line])
     
-    if liquidity_section:
-        print(f"✅ Found liquidity section ({len(liquidity_section)} characters)")
-        
-    if credit_facilities_section:
-        print(f"✅ Found credit facilities section ({len(credit_facilities_section)} characters)")
+    print(f"📄 Using middle 70% of document (lines {start_line} to {end_line} of {total_lines})")
     
-    # Combine all sections
-    complete_debt_info = extracted_debt_text
+    # Enhance the initial extraction with additional context
+    enhanced_debt_info = enhance_debt_extraction_with_context(extracted_debt_text, middle_section, debug=debug)
     
-    if credit_facilities_section:
-        complete_debt_info += "\n\n" + "="*60 + "\n\n" + "CREDIT FACILITIES SECTION (KEY REVOLVER/TERM LOAN INFO):\n\n" + credit_facilities_section
-    
-    if liquidity_section:
-        complete_debt_info += "\n\n" + "="*60 + "\n\n" + "LIQUIDITY AND CAPITAL RESOURCES SECTION:\n\n" + liquidity_section
-    
-    # Save the combined debt info (GPT + regex liquidity) to gpt_debt_info.txt
-    with open("gpt_debt_info.txt", "w", encoding="utf-8") as f:
-        f.write(f"Debt-Related Text Extraction for {ticker}\n")
-        f.write("=" * 60 + "\n\n")
-        f.write(complete_debt_info)
-    
-    print(f"✅ Debt extraction (with liquidity section) saved to gpt_debt_info.txt")
-    
-    # Convert complete debt info to layman's terms
-    laymans_debt_text = convert_debt_to_laymans_terms(complete_debt_info, debug=True)
-    
-    # Save the pre-verification layman's terms version
-    with open("laymans_debt_info_pre_verification.txt", "w", encoding="utf-8") as f:
-        f.write(f"Layman's Terms Debt Analysis for {ticker} (Pre-Verification)\n")
-        f.write("=" * 60 + "\n\n")
-        f.write(laymans_debt_text)
-    
-    print(f"✅ Pre-verification layman's terms saved to laymans_debt_info_pre_verification.txt")
+    # Convert enhanced debt info to layman's terms
+    laymans_debt_text = convert_debt_to_laymans_terms(enhanced_debt_info, debug=debug)
     
     # Step 5: Conservative verification pass - only organize by maturity and flag usage amounts
     print(f"\n🔍 Step 5: Running conservative verification pass")
-    verified_debt_text = verify_and_correct_debt_info(laymans_debt_text, complete_debt_info, debug=True)
+    verified_debt_text = verify_and_correct_debt_info(laymans_debt_text, enhanced_debt_info, debug=debug)
     
-    # Save the verified layman's terms version
-    with open("laymans_debt_info.txt", "w", encoding="utf-8") as f:
-        f.write(f"Layman's Terms Debt Analysis for {ticker} (Verified)\n")
-        f.write("=" * 60 + "\n\n")
-        f.write(verified_debt_text)
+    # Convert the verified text to a list of lines, filtering out empty lines
+    debt_lines = [line.strip() for line in verified_debt_text.split('\n') if line.strip()]
     
-    print(f"✅ Conservative verification completed and saved to laymans_debt_info.txt")
+    print(f"✅ Debt extraction pipeline completed for {ticker}")
+    return debt_lines
+
+
+if __name__ == "__main__":
+    ticker = "SNX"
+    debug = False
+    debt_lines = run_debt_extraction_pipeline(ticker, debug=debug)
+
+    print(f"\n📋 Final debt analysis for {ticker}:")
+    for line in debt_lines:
+        print(f"   {line}")

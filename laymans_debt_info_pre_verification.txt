@@ -1,48 +1,28 @@
-Layman's Terms Debt Analysis for INGR (Pre-Verification)
+Layman's Terms Debt Analysis for SNX (Pre-Verification)
 ============================================================
 
-$597M 2.900% Senior Notes @ mat. 6/1/2030 (JPM)  
-- Amount: $597 million  
-- Interest Rate: 2.900%  
-- Maturity: 06/20230  
-- Source: "Senior notes" in fair value measurements and debt arrangements  
+$3.5B Revolving Credit Facility @ 5.61% mat. 4/2029 (MISSING)  
+- Outstanding as of May 31, 2025: $150 million  
+- Potential increase up to $500 million at company's request  
+- Maturity date: April 16, 2029, with two one-year extensions possible  
 
-$499M 3.200% Senior Notes @ mat. 10/1/2026 (JPM)  
-- Amount: $499 million  
-- Interest Rate: 3.200%  
-- Maturity: 10/2026  
-- Source: "Senior notes" in fair value measurements and debt arrangements  
+$1.5B U.S. Accounts Receivable Securitization Arrangement @ Blended rate (not specified) mat. 11/2026  
+- Outstanding as of May 31, 2025: $0  
+- Borrowing capacity based on eligible trade receivables  
 
-$392M 3.900% Senior Notes @ mat. 6/1/2050 (JPM)  
-- Amount: $392 million (rounded from $392M/$391M)  
-- Interest Rate: 3.900%  
-- Maturity: 06/2050  
-- Source: "Senior notes" in fair value measurements and debt arrangements  
+$750M Term Loan (2024 Term Loan) @ SOFR + credit spread adjustment + margin (effective 5.68%) mat. 9/2027  
+- Outstanding as of May 31, 2025: $750 million  
 
-$252M 6.625% Senior Notes @ mat. 4/15/2037 (JPM)  
-- Amount: $252 million  
-- Interest Rate: 6.625%  
-- Maturity: 04/2037  
-- Source: "Senior notes" in fair value measurements and debt arrangements  
+$1.5B Term Loan (Part of Credit Agreement) @ SOFR + credit spread adjustment + margin (effective 5.80%) mat. 9/2026  
+- Outstanding as of May 31, 2025: $581.25 million  
 
-$1,742M Long-term Debt @ (MISSING) mat. (MISSING)  
-- Amount: $1,742 million as of March 31, 2025  
-- Interest Rate: MISSING  
-- Maturity: MISSING  
-- Source: "Long-term debt" in debt arrangements; details on interest rate and maturity missing, check credit agreement  
+$2.4B Senior Notes (2021 Series) @ Fixed rates (varies by series) mat. 2024, 2026, 2028, 2031 (specific series not detailed)  
+- Outstanding as of May 31, 2025: $2.4 billion  
 
-$42M Short-term Borrowings @ (MISSING) mat. (MISSING)  
-- Amount: $42 million  
-- Interest Rate: MISSING  
-- Maturity: MISSING  
-- Source: "Short-term borrowings" in debt arrangements; details missing, check credit agreement  
+$600M Senior Notes (2034 Series) @ 30 bps spread over benchmark, fixed rate (details not specified) mat. 4/2034  
+- Outstanding as of May 31, 2025: $600 million  
 
-$2M Other Long-term Borrowings @ (MISSING) mat. (MISSING)  
-- Amount: $2 million  
-- Interest Rate: MISSING  
-- Maturity: MISSING  
-- Source: "Other long-term borrowings" in debt arrangements; details missing, check credit agreement  
-
-$0 Commercial Paper @ (MISSING) mat. (MISSING)  
-- Amount: $0 (no outstanding commercial paper)  
-- Source: "Commercial paper" in debt arrangements; no outstanding balance as of March 31, 2025
+**Additional notes:**  
+- The Revolving Credit Facility's lead bank/lender is not explicitly stated.  
+- The U.S. AR arrangement has no current borrowings but a capacity of up to $1.5 billion.  
+- All facilities are current as of May 31, 2025, with the maturity dates listed.

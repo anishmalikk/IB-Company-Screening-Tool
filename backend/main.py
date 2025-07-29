@@ -3,9 +3,11 @@
 from fastapi import FastAPI
 from exec_scraper import get_execs_via_serp
 from get_industry import get_industry_and_blurb, openai_client
-from get_10q import get_latest_10q_link_for_ticker, get_laymanized_debt_liquidity
+from get_10q import get_latest_10q_link_for_ticker
 from email_scraper import scrape_emails
+from laymans10qparser import run_debt_extraction_pipeline
 import asyncio
+import os
 
 app = FastAPI()
 
@@ -21,12 +23,17 @@ def parse_execs(exec_str):
             ceo = line.split(":", 1)[1].strip()
     return cfo, treasurer, ceo
 
+
+
 @app.get("/company_info/{company_name}/{ticker}")
 async def company_info(company_name: str, ticker: str):
     execs_str = await get_execs_via_serp(company_name)
     cfo, treasurer, ceo = parse_execs(execs_str)
     tenq_link = get_latest_10q_link_for_ticker(ticker)
-    debt_liquidity_summary = get_laymanized_debt_liquidity(tenq_link) if tenq_link else ""
+    
+    # Run the debt extraction pipeline
+    debt_liquidity_summary = run_debt_extraction_pipeline(ticker, debug=False)
+    
     email_info = scrape_emails(company_name, cfo, treasurer, ceo)
     industry_blurb_full = get_industry_and_blurb(company_name)
     # Split industry_blurb into industry (first 5 words, capitalized) and the rest as industry_blurb
@@ -48,8 +55,7 @@ async def company_info(company_name: str, ticker: str):
     else:
         industry = ""
         blurb = ""
-    # Split debt_liquidity_summary into a list of non-empty lines
-    debt_liquidity_lines = [line.strip() for line in debt_liquidity_summary.splitlines() if line.strip()]
+    
     return {
         "executives": {
             "cfo": cfo,
@@ -60,5 +66,5 @@ async def company_info(company_name: str, ticker: str):
         "industry": industry,
         "industry_blurb": blurb,
         "latest_10q_link": tenq_link,
-        "debt_liquidity_summary": debt_liquidity_lines
+        "debt_liquidity_summary": debt_liquidity_summary
     }
