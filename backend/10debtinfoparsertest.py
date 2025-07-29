@@ -192,6 +192,7 @@ SPECIAL FOCUS AREAS:
 - Look for maturity dates and payment schedules. Make sure you get these maturities correct, dont use any other dates like ones from other types of debt or the filing date.
 - CRITICAL: Extract both term loans AND senior notes as separate facility types
 - CRITICAL: Preserve original currency amounts (CHF, EUR, etc.) not just USD equivalents
+- The more information you can get about the facility, the better.
 
 {sections_text}
 
@@ -226,36 +227,7 @@ Extract ONLY the facilities that are clearly documented in the above sections. P
             print(f"❌ OpenAI API call failed: {e}")
         return f"Error extracting debt-related text: {str(e)}"
 
-def find_debt_lines(text):
-    """
-    Use regex to pre-scan and identify candidate debt/maturity lines for verification.
-    """
-    # Pattern to find debt facilities with amounts and potential maturities
-    pattern = re.compile(
-        r'\$\d{1,3}(?:,\d{3})*(?:\s)?(million|billion|M|B)?[^.\n]*?(note|loan|credit|facility|debt|revolver|term)[^.\n]*?(?:matur.*?(\d{4})|due.*?(\d{4})|exp.*?(\d{4}))?', 
-        re.IGNORECASE
-    )
-    
-    # Pattern to find standalone maturity dates
-    maturity_pattern = re.compile(r'\b(matur|due|exp).*?(\d{4})\b', re.IGNORECASE)
-    
-    debt_lines = []
-    for match in pattern.finditer(text):
-        debt_lines.append({
-            'full_match': match.group(0),
-            'amount_unit': match.group(1),
-            'debt_type': match.group(2),
-            'year1': match.group(3),
-            'year2': match.group(4),
-            'year3': match.group(5)
-        })
-    
-    # Find all years mentioned in debt context
-    years_found = set()
-    for match in maturity_pattern.finditer(text):
-        years_found.add(match.group(2))
-    
-    return debt_lines, sorted(years_found)
+
 
 
 
@@ -341,6 +313,7 @@ $900M Revolver @ MISSING - CHECK CREDIT AGREEMENT mat. MISSING - CHECK CREDIT AG
 $100M Term Loan @ 4.5% mat. 12/2026 (BofA)
 
 Its really important that this information is correct, otherwise its useless- make sure you think through it, take your time, and make sure you get it right. Triple check all the information before you return it.
+Make sure each facility is unique and is an actual facility, not stuff like total long term debt or short term debt.
 ---------------------------------------------------------------------------
 
 COMPLETE DEBT AND LIQUIDITY INFORMATION:
@@ -509,7 +482,7 @@ def download_and_parse_10q(ticker: str):
 
 if __name__ == "__main__":
     # Test debt extraction for BRKR
-    ticker = "OUT"
+    ticker = "INGR"
     debug = False  # Enable debug output
     
     # Step 1 & 2: Download and parse
@@ -530,16 +503,11 @@ if __name__ == "__main__":
     print(f"📋 Found {len(debt_sections)} debt note sections")
     for section in debt_sections:
         print(f"   - {section['header']}")
+
     
     # Extract debt tables as supporting data
     debt_tables = extract_debt_tables_focused(soup)
     print(f"📊 Found {len(debt_tables)} debt-related tables")
-    
-    # Pre-scan for debt lines and years for verification
-    debt_lines, years_found = find_debt_lines(text_content)
-    print(f"📅 Years found in document: {years_found}")
-    if debug:
-        print(f"🔍 Found {len(debt_lines)} potential debt lines")
     
     # Extract debt information using focused sections + tables
     extracted_debt_text = extract_debt_related_text_focused(text_content, debt_sections, debt_tables, debug=True)
