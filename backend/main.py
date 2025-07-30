@@ -6,7 +6,7 @@ from exec_scraper import get_execs_via_serp
 from get_industry import get_industry_and_blurb, openai_client
 from get_10q import get_latest_10q_link_for_ticker
 from email_scraper import scrape_emails
-from laymans10qparser import run_debt_extraction_pipeline
+from promptand10q import run_prompt_generation_pipeline
 import asyncio
 import os
 
@@ -115,17 +115,89 @@ async def company_info(
     # Get 10-Q link if requested
     if include_10q_link:
         try:
+            print(f"🔍 Getting 10-Q link for ticker: {ticker}")
             tenq_link = get_latest_10q_link_for_ticker(ticker)
+            print(f"✅ 10-Q link: {tenq_link}")
             result["latest_10q_link"] = tenq_link
         except Exception as e:
+            print(f"❌ Error getting 10-Q link: {str(e)}")
             result["latest_10q_link"] = f"Error: {str(e)}"
     
     # Get debt and liquidity summary if requested
     if include_debt_liquidity:
         try:
-            debt_liquidity_summary = run_debt_extraction_pipeline(ticker, debug=False)
-            result["debt_liquidity_summary"] = debt_liquidity_summary
+            # Get 10-Q link for debt analysis (even if 10-Q link checkbox is not checked)
+            print(f"🔍 Getting 10-Q link for debt analysis ticker: {ticker}")
+            tenq_link = get_latest_10q_link_for_ticker(ticker)
+            print(f"✅ 10-Q link for debt analysis: {tenq_link}")
+            
+            # Store the 10-Q link in the result so the frontend can use it
+            result["latest_10q_link"] = tenq_link
+            
+            # Generate the debt analysis prompt
+            print(f"🔍 Generating debt analysis prompt for ticker: {ticker}")
+            facility_list, manual_prompt = run_prompt_generation_pipeline(ticker, debug=False)
+            
+            if manual_prompt:
+                result["debt_liquidity_summary"] = ["PDF file available for download"]
+                result["debt_analysis_prompt"] = manual_prompt
+                result["facility_list"] = facility_list
+            else:
+                result["debt_liquidity_summary"] = ["PDF file available for download"]
+                result["debt_analysis_prompt"] = f"Error: Failed to generate prompt for {ticker}"
+                result["facility_list"] = f"Error: Failed to extract facilities for {ticker}"
+                
         except Exception as e:
+            print(f"❌ Error in debt analysis: {str(e)}")
             result["debt_liquidity_summary"] = [f"Error: {str(e)}"]
+            result["latest_10q_link"] = f"Error: {str(e)}"
+            result["debt_analysis_prompt"] = f"Error: {str(e)}"
+            result["facility_list"] = f"Error: {str(e)}"
     
     return result
+
+@app.get("/download_10q/{ticker}")
+async def download_10q(ticker: str, company_name: str = ""):
+    """
+    Download 10-Q file for a given ticker.
+    """
+    try:
+        # Get the 10-Q link
+        tenq_link = get_latest_10q_link_for_ticker(ticker)
+        if not tenq_link or tenq_link.startswith("Error:"):
+            return {"error": "No 10-Q filing found"}
+        
+        # Fetch the file content
+        import requests
+        headers = {
+            "User-Agent": "Company Screener Tool contact@companyscreenertool.com"
+        }
+        response = requests.get(tenq_link, headers=headers)
+        response.raise_for_status()
+        
+        # Create a better filename with company name
+        if company_name:
+            # Clean company name for filename (remove special chars, replace spaces with underscores)
+            clean_company_name = company_name.replace(" ", "_").replace(",", "").replace(".", "").replace("&", "and")
+            filename = f"{clean_company_name}_latest_10Q.html"
+        else:
+            # Fallback to ticker-based filename
+            filename = f"{ticker}_latest_10Q.html"
+        
+        print(f"🔍 Download filename: {filename}")
+        print(f"🔍 Company name: {company_name}")
+        print(f"🔍 Ticker: {ticker}")
+        
+        # Return the file content
+        from fastapi.responses import Response
+        return Response(
+            content=response.content,
+            media_type="text/html",
+            headers={
+                "Content-Disposition": f"attachment; filename=\"{filename}\"",
+                "Content-Type": "text/html"
+            }
+        )
+        
+    except Exception as e:
+        return {"error": f"Failed to download 10-Q: {str(e)}"}

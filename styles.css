@@ -269,6 +269,255 @@ input[type="text"]::placeholder {
     font-size: 0.9rem;
 }
 
+/* 10-Q Actions */
+.q10-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: #4299e1;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #3182ce;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #2d3748;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e0;
+    transform: translateY(-1px);
+}
+
+/* 10-Q Viewer */
+.q10-viewer-container {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.q10-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f7fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.q10-header h4 {
+    margin: 0;
+    color: #2d3748;
+    font-size: 1.1rem;
+}
+
+.q10-viewer {
+    position: relative;
+    background: #f7fafc;
+}
+
+.q10-viewer iframe {
+    display: block;
+    border: none;
+    background: white;
+}
+
+.q10-instructions {
+    padding: 15px 20px;
+    background: #edf2f7;
+    color: #4a5568;
+    font-size: 0.9rem;
+    margin: 0;
+    border-top: 1px solid #e2e8f0;
+}
+
+.q10-instructions i {
+    color: #4299e1;
+    margin-right: 8px;
+}
+
+/* PDF File Icon */
+.pdf-file-container {
+    text-align: center;
+    padding: 30px;
+    background: #f7fafc;
+    border-radius: 8px;
+    border: 2px dashed #cbd5e0;
+}
+
+.pdf-file-icon {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    max-width: 200px;
+}
+
+.pdf-file-icon:hover {
+    border-color: #4299e1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.15);
+}
+
+.pdf-file-icon:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(66, 153, 225, 0.1);
+}
+
+.pdf-file-icon i {
+    font-size: 3rem;
+    color: #e53e3e;
+}
+
+.pdf-file-icon span {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.9rem;
+}
+
+.pdf-instructions {
+    margin-top: 15px;
+    color: #4a5568;
+    font-size: 0.9rem;
+}
+
+.pdf-instructions i {
+    color: #4299e1;
+    margin-right: 8px;
+}
+
+/* URL Display */
+.url-display {
+    margin-bottom: 20px;
+}
+
+.url-display strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #2d3748;
+    font-size: 0.9rem;
+}
+
+.url-code {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 12px 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #4a5568;
+    word-break: break-all;
+    line-height: 1.4;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+/* Prompt Container */
+.prompt-container {
+    margin-top: 25px;
+    padding: 20px;
+    background: #f7fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.prompt-container h4 {
+    color: #2d3748;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.prompt-description {
+    color: #4a5568;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.prompt-description i {
+    color: #4299e1;
+    margin-right: 8px;
+}
+
+.prompt-text-container {
+    position: relative;
+}
+
+.prompt-textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #2d3748;
+    background: white;
+    resize: vertical;
+    overflow-y: auto;
+}
+
+.prompt-textarea:focus {
+    outline: none;
+    border-color: #4299e1;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 8px 15px;
+    background: #4299e1;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.copy-btn:hover {
+    background: #3182ce;
+    transform: translateY(-1px);
+}
+
+.copy-btn:active {
+    transform: translateY(0);
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 10px;

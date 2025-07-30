@@ -150,12 +150,67 @@ document.addEventListener('DOMContentLoaded', function() {
             debtSection.className = 'result-section';
             
             if (Array.isArray(data.debt_liquidity_summary) && data.debt_liquidity_summary.length > 0) {
-                debtSection.innerHTML = `
-                    <h3>Debt and Liquidity Analysis</h3>
-                    <div class="debt-summary">
-                        ${formatDebtAnalysis(data.debt_liquidity_summary)}
-                    </div>
-                `;
+                // Only show if we have a valid 10-Q link
+                if (data.latest_10q_link && !data.latest_10q_link.startsWith('Error:')) {
+                    // Create a better filename for display
+                    const companyName = document.getElementById('companyName') ? document.getElementById('companyName').value : '';
+                    const ticker = document.getElementById('tickerSymbol') ? document.getElementById('tickerSymbol').value : '';
+                    
+                    let displayFilename = '10-Q Filing.pdf';
+                    if (companyName) {
+                        const cleanCompanyName = companyName.replace(" ", "_").replace(",", "").replace(".", "").replace("&", "and");
+                        displayFilename = `${cleanCompanyName}_latest_10Q.pdf`;
+                    } else if (ticker) {
+                        displayFilename = `${ticker}_latest_10Q.pdf`;
+                    }
+                    
+                    let debtContent = `
+                        <h3>Debt and Liquidity Analysis</h3>
+                        <div class="pdf-file-container" data-url="${data.latest_10q_link}">
+                            <div class="pdf-file-icon" onclick="download10Q('${data.latest_10q_link}')" style="cursor: pointer;">
+                                <i class="fas fa-file-pdf"></i>
+                                <span>${displayFilename}</span>
+                            </div>
+                            <p class="pdf-instructions">
+                                <i class="fas fa-info-circle"></i> 
+                                Click the file icon above to download the 10-Q filing.
+                            </p>
+                        </div>
+                    `;
+                    
+                    // Add debt analysis prompt if available
+                    if (data.debt_analysis_prompt && !data.debt_analysis_prompt.startsWith('Error:')) {
+                        debtContent += `
+                            <div class="prompt-container">
+                                <h4>Debt Analysis Prompt</h4>
+                                <p class="prompt-description">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Copy this prompt and use it with GPT to analyze the company's debt structure:
+                                </p>
+                                <div class="prompt-text-container">
+                                    <textarea id="debtPromptText" class="prompt-textarea" readonly>${data.debt_analysis_prompt}</textarea>
+                                    <button class="copy-btn" onclick="copyDebtPrompt()">
+                                        <i class="fas fa-copy"></i> Copy Prompt
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else if (data.debt_analysis_prompt && data.debt_analysis_prompt.startsWith('Error:')) {
+                        debtContent += `
+                            <div class="prompt-container">
+                                <h4>Debt Analysis Prompt</h4>
+                                <p class="error-message">${data.debt_analysis_prompt}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    debtSection.innerHTML = debtContent;
+                } else {
+                    debtSection.innerHTML = `
+                        <h3>Debt and Liquidity Analysis</h3>
+                        <p class="error-message">No 10-Q filing available for download.</p>
+                    `;
+                }
             } else if (typeof data.debt_liquidity_summary === 'string' && data.debt_liquidity_summary.startsWith('Error:')) {
                 debtSection.innerHTML = `
                     <h3>Debt and Liquidity Analysis</h3>
@@ -178,7 +233,15 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 linkSection.innerHTML = `
                     <h3>Latest 10-Q Filing</h3>
-                    <p><a href="${data.latest_10q_link}" target="_blank" style="color: #4299e1; text-decoration: none;">View Latest 10-Q Filing</a></p>
+                    <div class="url-display">
+                        <strong>URL:</strong>
+                        <div class="url-code">${data.latest_10q_link}</div>
+                    </div>
+                    <div class="q10-actions">
+                        <a href="${data.latest_10q_link}" target="_blank" class="btn btn-primary">
+                            <i class="fas fa-external-link-alt"></i> Open in New Window
+                        </a>
+                    </div>
                 `;
             }
             resultsContent.appendChild(linkSection);
@@ -239,4 +302,167 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return formattedHtml;
     }
+
+    // Function to download 10-Q file
+    window.download10Q = function(url) {
+        // Show loading state
+        const pdfIcon = document.querySelector('.pdf-file-icon');
+        if (pdfIcon) {
+            pdfIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Downloading...</span>';
+        }
+        
+        // Get ticker and company name from the current page
+        const tickerElement = document.getElementById('tickerSymbol');
+        const companyElement = document.getElementById('companyName');
+        const ticker = tickerElement ? tickerElement.value : '';
+        const companyName = companyElement ? companyElement.value : '';
+        
+        if (!ticker) {
+            console.error('No ticker found');
+            // Fallback: open in new tab
+            window.open(url, '_blank');
+            if (pdfIcon) {
+                pdfIcon.innerHTML = '<i class="fas fa-file-pdf"></i><span>10-Q Filing.pdf</span>';
+            }
+            return;
+        }
+        
+        // Use our backend endpoint to download the file
+        const downloadUrl = `http://localhost:8000/download_10q/${ticker}?company_name=${encodeURIComponent(companyName)}`;
+        
+        fetch(downloadUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Generate filename on frontend side instead of relying on header
+                const tickerElement = document.getElementById('tickerSymbol');
+                const companyElement = document.getElementById('companyName');
+                const ticker = tickerElement ? tickerElement.value : '';
+                const companyName = companyElement ? companyElement.value : '';
+                
+                let filename = '10Q_filing.html';
+                if (companyName) {
+                    const cleanCompanyName = companyName.replace(" ", "_").replace(",", "").replace(".", "").replace("&", "and");
+                    filename = `${cleanCompanyName}_latest_10Q.html`;
+                } else if (ticker) {
+                    filename = `${ticker}_latest_10Q.html`;
+                }
+                
+                console.log('Generated filename:', filename);
+                
+                return response.blob().then(blob => ({ blob, filename }));
+            })
+            .then(({ blob, filename }) => {
+                // Create a download link with the blob
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Clean up the blob URL
+                URL.revokeObjectURL(link.href);
+                
+                // Restore the PDF icon with the correct filename
+                if (pdfIcon) {
+                    const companyName = document.getElementById('companyName') ? document.getElementById('companyName').value : '';
+                    const ticker = document.getElementById('tickerSymbol') ? document.getElementById('tickerSymbol').value : '';
+                    
+                    let displayFilename = '10-Q Filing.pdf';
+                    if (companyName) {
+                        const cleanCompanyName = companyName.replace(" ", "_").replace(",", "").replace(".", "").replace("&", "and");
+                        displayFilename = `${cleanCompanyName}_latest_10Q.pdf`;
+                    } else if (ticker) {
+                        displayFilename = `${ticker}_latest_10Q.pdf`;
+                    }
+                    
+                    pdfIcon.innerHTML = `<i class="fas fa-file-pdf"></i><span>${displayFilename}</span>`;
+                }
+            })
+            .catch(error => {
+                console.error('Download failed:', error);
+                // Fallback: open in new tab
+                window.open(url, '_blank');
+                
+                // Restore the PDF icon with the correct filename
+                if (pdfIcon) {
+                    const companyName = document.getElementById('companyName') ? document.getElementById('companyName').value : '';
+                    const ticker = document.getElementById('tickerSymbol') ? document.getElementById('tickerSymbol').value : '';
+                    
+                    let displayFilename = '10-Q Filing.pdf';
+                    if (companyName) {
+                        const cleanCompanyName = companyName.replace(" ", "_").replace(",", "").replace(".", "").replace("&", "and");
+                        displayFilename = `${cleanCompanyName}_latest_10Q.pdf`;
+                    } else if (ticker) {
+                        displayFilename = `${ticker}_latest_10Q.pdf`;
+                    }
+                    
+                    pdfIcon.innerHTML = `<i class="fas fa-file-pdf"></i><span>${displayFilename}</span>`;
+                }
+            });
+    };
+
+    // Function to copy debt analysis prompt
+    window.copyDebtPrompt = function() {
+        const textarea = document.getElementById('debtPromptText');
+        if (textarea) {
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                document.execCommand('copy');
+                
+                // Show success feedback
+                const copyBtn = document.querySelector('.copy-btn');
+                if (copyBtn) {
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    copyBtn.style.background = '#48bb78';
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.style.background = '';
+                    }, 2000);
+                }
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy prompt. Please select and copy manually.');
+            }
+        }
+    };
+
+    // Function to handle drag and drop of PDF file
+    window.drag = function(event) {
+        const container = event.target.closest('.pdf-file-container');
+        const url = container.dataset.url || '';
+        
+        if (url) {
+            // Set the URL as downloadable data
+            event.dataTransfer.setData('text/uri-list', url);
+            event.dataTransfer.setData('text/plain', url);
+            
+            // Create a download link
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = '10Q_filing.html';
+            
+            // Try to get filename from URL
+            const urlParts = url.split('/');
+            if (urlParts.length > 0) {
+                const filename = urlParts[urlParts.length - 1];
+                if (filename && filename.includes('.')) {
+                    link.download = filename;
+                }
+            }
+            
+            // Add the link to data transfer
+            event.dataTransfer.setData('text/html', link.outerHTML);
+            event.dataTransfer.effectAllowed = 'copy';
+        }
+    };
 }); 

@@ -144,18 +144,34 @@ llm_client = OpenAI(api_key=OPENAI_API_KEY)
 edgar = EdgarClient(user_agent="Company Screener Tool contact@companyscreenertool.com")
 
 def get_latest_10q_link_for_ticker(ticker: str) -> str:
+    print(f"🔍 Getting CIK for ticker: {ticker}")
     cik = get_cik_for_ticker(ticker)
+    print(f"✅ CIK: {cik}")
+    
     if not cik:
+        print(f"❌ No CIK found for ticker: {ticker}")
         return ""
-    submissions = edgar.get_submissions(cik=cik)
-    recent_filings = submissions["filings"]["recent"]
-    for i, form in enumerate(recent_filings["form"]):
-        if form == "10-Q":
-            accession = recent_filings["accessionNumber"][i]
-            primary_doc = recent_filings["primaryDocument"][i]
-            filing_url = f"https://www.sec.gov/Archives/edgar/data/{int(cik):010d}/{accession.replace('-', '')}/{primary_doc}"
-            return filing_url
-    return ""
+    
+    try:
+        print(f"🔍 Getting submissions for CIK: {cik}")
+        submissions = edgar.get_submissions(cik=cik)
+        recent_filings = submissions["filings"]["recent"]
+        print(f"✅ Found {len(recent_filings['form'])} recent filings")
+        
+        for i, form in enumerate(recent_filings["form"]):
+            if form == "10-Q":
+                accession = recent_filings["accessionNumber"][i]
+                primary_doc = recent_filings["primaryDocument"][i]
+                filing_url = f"https://www.sec.gov/Archives/edgar/data/{int(cik):010d}/{accession.replace('-', '')}/{primary_doc}"
+                print(f"✅ Found 10-Q filing: {filing_url}")
+                return filing_url
+        
+        print(f"❌ No 10-Q filing found for ticker: {ticker}")
+        return ""
+        
+    except Exception as e:
+        print(f"❌ Error getting submissions: {str(e)}")
+        return ""
 
 
 def identify_debt_facilities_first_pass(text_content, llm_client, model_name, debug=False):

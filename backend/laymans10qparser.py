@@ -120,19 +120,10 @@ def extract_debt_tables_focused(soup):
     
     return debt_tables
 
-def extract_debt_related_text_focused(text_content: str, debt_sections: list, debt_tables: list, debug=False):
+def extract_debt_related_text_focused(text_content: str, debt_tables: list, middle_section: str, debug=False):
     """
     Use OpenAI to extract all debt-related text from the 10-Q document.
     """
-    # Format debt sections for the prompt
-    sections_text = ""
-    if debt_sections:
-        sections_text = "\n\nDEBT NOTE SECTIONS (MOST ACCURATE SOURCE):\n" + "="*60 + "\n"
-        for i, section in enumerate(debt_sections, 1):
-            sections_text += f"\nSection {i}: {section['header']}\n"
-            sections_text += f"{section['content']}\n"
-            sections_text += "-" * 50 + "\n"
-
     # Format debt tables for the prompt
     tables_text = ""
     if debt_tables:
@@ -142,11 +133,15 @@ def extract_debt_related_text_focused(text_content: str, debt_sections: list, de
             tables_text += f"{table['content']}\n"
             tables_text += "-" * 40 + "\n"
 
+    # Format middle section for the prompt
+    middle_section_text = f"\n\nMIDDLE 80% OF 10-Q DOCUMENT:\n" + "="*60 + "\n"
+    middle_section_text += middle_section
+
     prompt = f"""
 You are a financial document expert. Extract ONLY the actual debt facilities from this 10-Q filing.
 
 CRITICAL INSTRUCTIONS:
-1. Focus PRIMARILY on the DEBT NOTE SECTIONS AND Liquidity and Capital Resources SECTION
+1. Focus PRIMARILY on the MIDDLE 80% OF THE 10-Q DOCUMENT - this contains the most comprehensive debt information
 2. Pay special attention to the "CREDIT FACILITIES SECTION" - this contains revolving credit facility and term loan agreement details
 3. Use tables as supporting evidence to validate amounts, rates, and maturities
 4. DO NOT make up or infer facilities that are not explicitly mentioned
@@ -194,11 +189,11 @@ SPECIAL FOCUS AREAS:
 - CRITICAL: Preserve original currency amounts (CHF, EUR, etc.) not just USD equivalents
 - The more information you can get about the facility, the better.
 
-{sections_text}
-
 {tables_text}
 
-Extract ONLY the facilities that are clearly documented in the above sections. Pay special attention to the Credit Facilities section for the main USD revolving and term loan facilities.
+{middle_section_text}
+
+Extract ONLY the facilities that are clearly documented in the above sections. Pay special attention to the Credit Facilities sections for the main USD revolving and term loan facilities.
 """
 
     try:
@@ -558,40 +553,40 @@ def run_debt_extraction_pipeline(ticker: str, debug=False):
         return []
     
     # Step 3: Extract debt-related text using focused approach
-    print(f"🔍 Step 3: Extracting debt information with focused note section parsing")
+    print(f"🔍 Step 3: Extracting debt information with tables and middle 80% of 10-Q")
     
     # Get text content
     text_content = soup.get_text(separator="\n", strip=True)
-    
-    # Extract specific debt note sections (most accurate)
-    debt_sections = extract_debt_note_sections(soup, text_content)
-    print(f"📋 Found {len(debt_sections)} debt note sections")
-    if debug:
-        for section in debt_sections:
-            print(f"   - {section['header']}")
     
     # Extract debt tables as supporting data
     debt_tables = extract_debt_tables_focused(soup)
     print(f"📊 Found {len(debt_tables)} debt-related tables")
     
-    # Extract debt information using focused sections + tables
-    extracted_debt_text = extract_debt_related_text_focused(text_content, debt_sections, debt_tables, debug=debug)
-    
-    # Step 4: Enhance the initial extraction with middle 70% of 10-Q
-    print(f"\n🔍 Step 4: Enhancing debt extraction with middle 70% of 10-Q")
-    
-    # Get the middle 70% of the document for additional context
+    # Get the middle 80% of the document for comprehensive debt information (FIRST PASS)
     total_lines = len(text_content.split('\n'))
-    start_line = int(total_lines * 0.15)  # Start at 15%
-    end_line = int(total_lines * 0.85)    # End at 85%
+    start_line_80 = int(total_lines * 0.10)  # Start at 10%
+    end_line_80 = int(total_lines * 0.90)    # End at 90%
     
     lines = text_content.split('\n')
-    middle_section = '\n'.join(lines[start_line:end_line])
+    middle_section_80 = '\n'.join(lines[start_line_80:end_line_80])
     
-    print(f"📄 Using middle 70% of document (lines {start_line} to {end_line} of {total_lines})")
+    print(f"📄 Using middle 80% of document for first pass (lines {start_line_80} to {end_line_80} of {total_lines})")
     
-    # Enhance the initial extraction with additional context
-    enhanced_debt_info = enhance_debt_extraction_with_context(extracted_debt_text, middle_section, debug=debug)
+    # Extract debt information using tables + middle 80% of 10-Q (FIRST PASS)
+    extracted_debt_text = extract_debt_related_text_focused(text_content, debt_tables, middle_section_80, debug=debug)
+    
+    # Step 4: Enhance the initial extraction with middle 60% of 10-Q (SECOND PASS)
+    print(f"\n🔍 Step 4: Enhancing debt extraction with middle 60% of 10-Q")
+    
+    # Get the middle 60% of the document for second pass
+    start_line_60 = int(total_lines * 0.20)  # Start at 20%
+    end_line_60 = int(total_lines * 0.80)    # End at 80%
+    
+    middle_section_60 = '\n'.join(lines[start_line_60:end_line_60])
+    print(f"📄 Using middle 60% of document for second pass (lines {start_line_60} to {end_line_60} of {total_lines})")
+    
+    # Enhance the initial extraction with middle 60% context
+    enhanced_debt_info = enhance_debt_extraction_with_context(extracted_debt_text, middle_section_60, debug=debug)
     
     # Convert enhanced debt info to layman's terms
     laymans_debt_text = convert_debt_to_laymans_terms(enhanced_debt_info, debug=debug)
@@ -608,7 +603,7 @@ def run_debt_extraction_pipeline(ticker: str, debug=False):
 
 
 if __name__ == "__main__":
-    ticker = "SNX"
+    ticker = "CE"
     debug = False
     debt_lines = run_debt_extraction_pipeline(ticker, debug=debug)
 
