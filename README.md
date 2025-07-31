@@ -13,19 +13,19 @@ Company Name Input
 ┌─────────────────────────────────────────────────────────────┐
 │                    Data Collection Phase                    │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. CEO/CFO Search Results (SerpAPI)                       │
-│ 2. Leadership Page URL Discovery                          │
-│ 3. Leadership Page Full Text Scraping (Playwright)        │
-│ 4. Treasurer-Specific Search Results                      │
+│ 1. CEO/CFO Search Results (SerpAPI)                         │
+│ 2. Leadership Page URL Discovery                            │
+│ 3. Leadership Page Full Text Scraping (Playwright)          │
+│ 4. Treasurer-Specific Search Results                        │
 └─────────────────────────────────────────────────────────────┘
        ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                    Data Processing Phase                    │
 ├─────────────────────────────────────────────────────────────┤
-│ LLM Analysis & Formatting                                 │
-│ - Validates current vs former executives                  │
-│ - Cross-references multiple sources                       │
-│ - Formats output in standardized format                   │
+│ LLM Analysis & Formatting                                   │
+│ - Validates current vs former executives                    │
+│ - Cross-references multiple sources                         │
+│ - Formats output in standardized format                     │
 └─────────────────────────────────────────────────────────────┘
        ↓
 Formatted Executive Information Output
@@ -122,35 +122,35 @@ Company Name + Executive Names Input
 ┌─────────────────────────────────────────────────────────────┐
 │                    Domain Discovery Phase                   │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Email Format Search (SerpAPI)                          │
-│ 2. Domain Extraction from Search Results                  │
-│ 3. Fallback: Investor Relations/PR Email Search          │
+│ 1. Email Format Search (SerpAPI)                            │
+│ 2. Domain Extraction from Search Results                    │
+│ 3. Fallback: Investor Relations/PR Email Search             │
 └─────────────────────────────────────────────────────────────┘
        ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                    Email Discovery Phase                    │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. CFO Email Search (Primary)                             │
-│ 2. CEO Email Search (Fallback)                            │
-│ 3. Treasurer Email Search (Secondary Fallback)            │
-│ 4. Name-Email Pair Extraction                             │
+│ 1. CFO Email Search (Primary)                               │
+│ 2. CEO Email Search (Fallback)                              │
+│ 3. Treasurer Email Search (Secondary Fallback)              │
+│ 4. Name-Email Pair Extraction                               │
 └─────────────────────────────────────────────────────────────┘
        ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                    Format Detection Phase                   │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Pattern Analysis (first.last, firstlast, etc.)        │
-│ 2. GPT Format Inference (Fallback)                        │
-│ 3. Common Format Testing (Last Resort)                    │
+│ 1. Pattern Analysis (first.last, firstlast, etc.)           │
+│ 2. GPT Format Inference (Fallback)                          │
+│ 3. Common Format Testing (Last Resort)                      │
 └─────────────────────────────────────────────────────────────┘
        ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                    Email Construction Phase                 │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Name Normalization & Parsing                           │
-│ 2. Email Format Application                                │
-│ 3. Fake/Test Email Filtering                              │
-│ 4. Generic Email Detection                                │
+│ 1. Name Normalization & Parsing                             │
+│ 2. Email Format Application                                 │
+│ 3. Fake/Test Email Filtering                                │
+│ 4. Generic Email Detection                                  │
 └─────────────────────────────────────────────────────────────┘
        ↓
 Constructed Executive Email Addresses
@@ -281,20 +281,20 @@ The `get_industry.py` module provides automated extraction of company industry c
 Company Name Input
        ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                    Web Search Phase                        │
+│                    Web Search Phase                         │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Company "About" Search (SerpAPI)                       │
-│ 2. Snippet Collection from Organic Results                │
-│ 3. Context Aggregation (15 results)                      │
+│ 1. Company "About" Search (SerpAPI)                         │
+│ 2. Snippet Collection from Organic Results                  │
+│ 3. Context Aggregation (15 results)                         │
 └─────────────────────────────────────────────────────────────┘
        ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                    AI Analysis Phase                       │
+│                    AI Analysis Phase                        │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Structured Prompt Construction                         │
-│ 2. LLM Industry Classification                           │
-│ 3. Business Description Generation                        │
-│ 4. Format Validation & Output                            │
+│ 1. Structured Prompt Construction                           │
+│ 2. LLM Industry Classification                              │
+│ 3. Business Description Generation                          │
+│ 4. Format Validation & Output                               │
 └─────────────────────────────────────────────────────────────┘
        ↓
 Industry Classification + 3-Sentence Company Blurb
@@ -385,25 +385,25 @@ Company Ticker Input
 ┌─────────────────────────────────────────────────────────────┐
 │                    SEC Filing Discovery Phase               │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Ticker to CIK Mapping                                  │
-│ 2. Latest 10-Q Filing Retrieval                          │
-│ 3. Document Download & Parsing                            │
+│ 1. Ticker to CIK Mapping                                    │
+│ 2. Latest 10-Q Filing Retrieval                             │
+│ 3. Document Download & Parsing                              │
 └─────────────────────────────────────────────────────────────┘
        ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                    Facility Extraction Phase                │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. First Pass: LLM Facility Identification                │
-│ 2. Facility List Generation                               │
-│ 3. Format Validation & Structuring                        │
+│ 1. First Pass: LLM Facility Identification                  │
+│ 2. Facility List Generation                                 │
+│ 3. Format Validation & Structuring                          │
 └─────────────────────────────────────────────────────────────┘
        ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                    Prompt Generation Phase                  │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Manual GPT Prompt Construction                         │
-│ 2. Full HTML Document Integration                         │
-│ 3. Structured Analysis Instructions                        │
+│ 1. Manual GPT Prompt Construction                           │
+│ 2. Full HTML Document Integration                           │
+│ 3. Structured Analysis Instructions                         │
 └─────────────────────────────────────────────────────────────┘
        ↓
 Facility List + Manual Analysis Prompt
@@ -510,27 +510,27 @@ HTTP Request Input
 ┌─────────────────────────────────────────────────────────────┐
 │                    Request Processing Phase                 │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Parameter Validation & Parsing                         │
-│ 2. Optional Component Selection                           │
-│ 3. Async Pipeline Orchestration                           │
+│ 1. Parameter Validation & Parsing                           │
+│ 2. Optional Component Selection                             │
+│ 3. Async Pipeline Orchestration                             │
 └─────────────────────────────────────────────────────────────┘
        ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                    Component Execution Phase                │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Executive Information (exec_scraper)                   │
-│ 2. Email Construction (email_scraper)                     │
-│ 3. Industry Classification (get_industry)                 │
-│ 4. 10-Q Link Retrieval (promptand10q)                    │
-│ 5. Debt Analysis (promptand10q)                          │
+│ 1. Executive Information (exec_scraper)                     │
+│ 2. Email Construction (email_scraper)                       │
+│ 3. Industry Classification (get_industry)                   │
+│ 4. 10-Q Link Retrieval (promptand10q)                       │
+│ 5. Debt Analysis (promptand10q)                             │
 └─────────────────────────────────────────────────────────────┘
        ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                    Response Assembly Phase                 │
+│                    Response Assembly Phase                  │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Error Handling & Fallbacks                             │
-│ 2. Data Formatting & Validation                          │
-│ 3. Structured JSON Response                               │
+│ 1. Error Handling & Fallbacks                               │
+│ 2. Data Formatting & Validation                             │
+│ 3. Structured JSON Response                                 │
 └─────────────────────────────────────────────────────────────┘
        ↓
 Structured Company Screening Response
@@ -635,17 +635,17 @@ Environment Configuration
 ┌─────────────────────────────────────────────────────────────┐
 │                    Client Selection Phase                   │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. USE_OPENROUTER Environment Check                       │
-│ 2. API Key Validation                                     │
-│ 3. Client Configuration                                    │
+│ 1. USE_OPENROUTER Environment Check                         │
+│ 2. API Key Validation                                       │
+│ 3. Client Configuration                                     │
 └─────────────────────────────────────────────────────────────┘
        ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                    Client Initialization Phase              │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. OpenAI Client (Default)                                │
-│ 2. OpenRouter Client (Alternative)                        │
-│ 3. Base URL Configuration                                 │
+│ 1. OpenAI Client (Default)                                  │
+│ 2. OpenRouter Client (Alternative)                          │
+│ 3. Base URL Configuration                                   │
 └─────────────────────────────────────────────────────────────┘
        ↓
 Configured LLM Client Instance
@@ -703,11 +703,11 @@ The `ticker_utils.py` module provides ticker-to-CIK mapping functionality for SE
 Ticker Input
        ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                    CIK Mapping Phase                       │
+│                    CIK Mapping Phase                        │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. JSON Database Loading                                  │
-│ 2. Case-Insensitive Ticker Matching                      │
-│ 3. CIK String Extraction                                 │
+│ 1. JSON Database Loading                                    │
+│ 2. Case-Insensitive Ticker Matching                         │
+│ 3. CIK String Extraction                                    │
 └─────────────────────────────────────────────────────────────┘
        ↓
 CIK String Output
