@@ -138,8 +138,8 @@ def extract_all_relevant_sections(soup, min_len=200, max_len=50000, debug=False,
     return extracted
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-MODEL_NAME = os.getenv("10Q_MODEL_NAME", "MODEL_NAME")
-SECONDPASS_MODEL = os.getenv("SECONDPASS_MODEL", MODEL_NAME)
+MODEL_NAME = os.getenv("10Q_MODEL_NAME", "gpt-4.1-nano")
+SECONDPASS_MODEL = os.getenv("SECONDPASS_MODEL", "gpt-4.1-nano")
 llm_client = OpenAI(api_key=OPENAI_API_KEY)
 edgar = EdgarClient(user_agent="Company Screener Tool contact@companyscreenertool.com")
 

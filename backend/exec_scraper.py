@@ -10,7 +10,7 @@ import asyncio
 from playwright.async_api import async_playwright
 
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
-MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4.1-nano")
 
 LEADERSHIP_KEYWORDS = [
     "leadership", "executive", "management", "officers", "team", "board", "directors"

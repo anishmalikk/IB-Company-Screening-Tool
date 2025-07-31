@@ -14,8 +14,8 @@ edgar = EdgarClient(user_agent="Company Screener Tool contact@companyscreenertoo
 
 # Initialize OpenAI client
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-MODEL_NAME = os.getenv("10Q_MODEL_NAME", "gpt-4o-mini")
-SECONDPASS_MODEL = os.getenv("SECONDPASS_MODEL", "gpt-4o-mini")
+MODEL_NAME = os.getenv("10Q_MODEL_NAME", "gpt-4.1-nano")
+SECONDPASS_MODEL = os.getenv("SECONDPASS_MODEL", "gpt-4.1-nano")
 llm_client = OpenAI(api_key=OPENAI_API_KEY)
 
 def extract_debt_note_sections(soup, text_content):

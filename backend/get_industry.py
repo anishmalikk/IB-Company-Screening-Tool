@@ -6,7 +6,7 @@ from openai import OpenAI
 
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4.1-nano")
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 def search_web(query, num_results=15):

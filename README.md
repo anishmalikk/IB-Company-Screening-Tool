@@ -67,7 +67,7 @@ Formatted Executive Information Output
 
 **`format_exec_info(ceo_cfo_snippets, leadership_snippets, treasurer_snippets, company_name)`**
 - Combines all collected data sources
-- Uses LLM (configurable via `MODEL_NAME` env var, default: gpt-3.5-turbo)
+- Uses LLM (configurable via `MODEL_NAME` env var, default: gpt-4.1-nano)
 - Validates current vs former executives
 - Cross-references multiple sources for accuracy
 - Outputs standardized format:
@@ -91,7 +91,7 @@ Formatted Executive Information Output
 
 #### Environment Variables
 - `SERPAPI_API_KEY`: Required for Google search functionality
-- `MODEL_NAME`: LLM model for data processing (default: gpt-3.5-turbo)
+- `MODEL_NAME`: LLM model for data processing (default: gpt-4.1-nano)
 
 #### Dependencies
 - **SerpAPI**: Google search results
@@ -237,7 +237,7 @@ Constructed Executive Email Addresses
 
 #### Environment Variables
 - `SERPAPI_API_KEY`: Required for Google search functionality
-- `MODEL_NAME`: LLM model for format inference (default: gpt-3.5-turbo)
+- `MODEL_NAME`: LLM model for format inference (default: gpt-4.1-nano)
 - `OPENAI_API_KEY`: Required for GPT fallback functionality
 
 #### Dependencies
@@ -332,7 +332,7 @@ Industry Classification + 3-Sentence Company Blurb
 - **Context Integration**: Uses aggregated search snippets
 
 **LLM Processing**
-- Uses configurable model (default: gpt-3.5-turbo)
+- Uses configurable model (default: gpt-4.1-nano)
 - Structured output format with clear examples
 - Error handling for empty or malformed responses
 
@@ -348,7 +348,7 @@ Industry Classification + 3-Sentence Company Blurb
 #### Environment Variables
 - `SERPAPI_API_KEY`: Required for web search functionality
 - `OPENAI_API_KEY`: Required for LLM analysis
-- `MODEL_NAME`: LLM model for analysis (default: gpt-3.5-turbo)
+- `MODEL_NAME`: LLM model for analysis (default: gpt-4.1-nano)
 
 #### Dependencies
 - **requests**: HTTP client for SerpAPI integration
@@ -671,7 +671,7 @@ Configured LLM Client Instance
 
 **`get_model_name() -> str`**
 - Returns configured model name for LLM calls
-- **Default**: "gpt-3.5-turbo"
+- **Default**: "gpt-4.1-nano"
 - **Configuration**: `MODEL_NAME` environment variable
 - **Usage**: Consistent model selection across components
 

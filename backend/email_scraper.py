@@ -8,7 +8,7 @@ import unicodedata
 
 load_dotenv()
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
-MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4.1-nano")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 llm_client = OpenAI(api_key=OPENAI_API_KEY)
 

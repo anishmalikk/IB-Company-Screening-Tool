@@ -28,6 +28,6 @@ def get_llm_client() -> OpenAI:
 def get_model_name() -> str:
     """
     Returns the model name to use for the LLM call.
-    Defaults to 'gpt-3.5-turbo' if not specified.
+    Defaults to 'gpt-4.1-nano' if not specified.
     """
-    return os.getenv("MODEL_NAME", "gpt-3.5-turbo")
+    return os.getenv("MODEL_NAME", "gpt-4.1-nano")
