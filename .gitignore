@@ -9,3 +9,8 @@ venv/
 
 # OS
 .DS_Store
+
+# Debug files
+debug_*.txt
+*debug*.txt
+debug_output.txt

@@ -4,7 +4,7 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from exec_scraper import get_execs_via_serp
 from get_industry import get_industry_and_blurb, openai_client
-from get_10q import get_latest_10q_link_for_ticker
+from promptand10q import get_latest_10q_link_for_ticker
 from email_scraper import scrape_emails
 from promptand10q import run_prompt_generation_pipeline
 import asyncio
