@@ -73,15 +73,14 @@ Your task is to extract the full debt capital stack for this company using the H
 - Add any facilities you find that were not in the list
 - Do not omit any active term loans, revolvers, or notes
 - Follow this strict format:
-  $[Amount] [Facility Type] @ [Interest Rate] mat. MM/YYYY (Lead Bank)
+  $[Full Facility Amount] [Facility Type] @ [Interest Rate] mat. MM/YYYY (Lead Bank)
     - Bullet 1
     - Bullet 2
 
-If any detail is missing, write:
-"MISSING"
+If any detail is missing, dont include the info in the main bullet and in the supporting bullets, tell me that the info is missing.
 
 CRITICAL: LIST THE FACILITIES FROM EARLIEST TO LATEST MATURITY. Do not summarize. Do not omit any bullet points.
-
+CRITICAL: FULL FACILITY AMOUNTS SHOULD BE LISTED IN THE MAIN BULLET. IF YOU CANNOT FIND THE FULL AMOUNT, DO NOT INCLUDE IT IN THE MAIN BULLET (TELL ME ITS MISSING), AND TELL ME USAGE IN THE SUPPORTING BULLETS.
 Begin now using the full HTML document.
 """
 
