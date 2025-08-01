@@ -1,5 +1,5 @@
 # ib-company-screener
-Automated IB company screening tool using GPT + SEC + other public data
+A comprehensive automated investment banking company screening platform that leverages advanced AI, SEC filings, and public data sources to provide detailed financial and executive intelligence.
 
 ## Executive Scraper Pipeline
 
