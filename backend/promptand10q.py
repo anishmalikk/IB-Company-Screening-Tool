@@ -26,9 +26,8 @@ def extract_facility_names_from_10q(soup, text_content, debug=False):
 You are reviewing the latest 10-Q for a company. Your task is to scan the full document (text and tables) and list every currently active debt facility or note mentioned.
 
 For each facility or note, extract the following:
-- Name or label (e.g., 2024 Term Loan, Revolving Credit Facility, CHF Senior Notes)
+- Name or label (e.g., 2024 Term Loan, Revolving Credit Facility, Senior Notes)
 - Currency
-- Maturity date (if known)
 - Facility type (e.g., Term Loan, Revolver, Note, etc.)
 
 You do NOT need to format it precisely. Just list every unique facility that is currently active, regardless of how much detail is available.
@@ -66,6 +65,8 @@ def generate_manual_gpt_prompt(facility_list: str, html_content: str):
     prompt = f"""I performed an initial manual pass through the company's 10-Q and identified the following currently active debt facilities and notes:
 
 {facility_list}
+
+This list may not be complete and may have inaccurate information, its just for reference.
 
 Your task is to extract the full debt capital stack for this company using the HTML provided. You must:
 
