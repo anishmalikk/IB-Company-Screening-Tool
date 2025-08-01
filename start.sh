@@ -13,6 +13,19 @@ cleanup() {
 # Set up signal handlers
 trap cleanup SIGINT SIGTERM
 
+# Kill any existing processes that might be using our ports
+echo "🧹 Cleaning up existing processes..."
+pkill -f "uvicorn main:app" 2>/dev/null || true
+pkill -f "python -m http.server" 2>/dev/null || true
+
+# Kill processes using our specific ports
+echo "🔌 Freeing up ports..."
+lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+lsof -ti:8080 | xargs kill -9 2>/dev/null || true
+
+# Wait a moment for processes to fully terminate
+sleep 2
+
 # Start backend
 echo "🚀 Starting backend server..."
 cd backend
