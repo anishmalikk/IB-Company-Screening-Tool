@@ -17,7 +17,7 @@ try:
 except ImportError:
     openai = None
 
-GENERIC_EMAIL_PREFIXES = {"pr", "info", "privacy", "investor", "investors", "contact", "support", "admin", "help", "careers", "jobs", "media", "press", "webmaster", "office", "general", "ir", "corp", "sustainability", "esg", "environmental", "hr", "humanresources", "legal", "compliance", "marketing", "sales", "business", "service", "services", "team", "hello", "noreply", "no-reply", "donotreply", "do-not-reply", "postmaster", "abuse", "security", "spam", "feedback", "newsletter", "updates", "alerts", "notifications", "system", "ceo", "cfo", "treasurer"}
+GENERIC_EMAIL_PREFIXES = {"pr", "info", "privacy", "investor", "investors", "contact", "support", "admin", "help", "careers", "jobs", "media", "press", "webmaster", "office", "general", "ir", "corp", "sustainability", "esg", "environmental", "hr", "humanresources", "legal", "compliance", "marketing", "sales", "business", "service", "services", "team", "hello", "noreply", "no-reply", "donotreply", "do-not-reply", "postmaster", "abuse", "security", "spam", "feedback", "newsletter", "updates", "alerts", "notifications", "system", "ceo", "cfo", "treasurer", "reception"}
 
 def is_generic_email(email):
     local = email.split('@')[0].lower()
@@ -467,12 +467,39 @@ def scrape_emails(company_name, cfo_name, treasurer_name, ceo_name):
             if all_generic:
                 return {"error": "Only generic emails found (no real person emails available)"}
             
-            # First, try to infer format from the source email with any of the actual names
+            # Prioritize emails that might match our target names
+            prioritized_emails = []
+            for email in all_emails:
+                email_local = email.split('@')[0].lower()
+                # Check if email might match any of our target names
+                for name in actual_names:
+                    if name:
+                        name_parts = name.lower().split()
+                        if len(name_parts) >= 2:
+                            first, last = name_parts[0], name_parts[-1]
+                            # Check if email contains parts of the name
+                            if (first in email_local or last in email_local or 
+                                email_local.startswith(first) or email_local.startswith(last)):
+                                prioritized_emails.insert(0, email)  # Put matching emails first
+                                break
+                        else:
+                            # Single name - check if it's in the email
+                            if name.lower() in email_local:
+                                prioritized_emails.insert(0, email)
+                                break
+                else:
+                    # No match found, add to end
+                    prioritized_emails.append(email)
+            
+            # Use the first prioritized email (or first email if no prioritization worked)
+            source_email = prioritized_emails[0] if prioritized_emails else all_emails[0]
+            
+            # Try to infer format from the source email with any of the actual names
             fmt = None
             source_method = "unknown"
             
             # Try with CFO name first
-            fmt = infer_format_from_email(all_emails[0], cfo_name)
+            fmt = infer_format_from_email(source_email, cfo_name)
             if fmt:
                 source_method = "inferred from email with CFO name"
             
@@ -480,14 +507,14 @@ def scrape_emails(company_name, cfo_name, treasurer_name, ceo_name):
             if not fmt and actual_names:
                 for name in actual_names:
                     if name != cfo_name:
-                        fmt = infer_format_from_email(all_emails[0], name)
+                        fmt = infer_format_from_email(source_email, name)
                         if fmt:
                             source_method = f"inferred from email with {name}"
                             break
             
             # If still no format, try GPT fallback
             if not fmt:
-                fmt = gpt_infer_format(cfo_name, all_emails)
+                fmt = gpt_infer_format(cfo_name, [source_email])
                 if fmt:
                     source_method = "gpt-inferred format"
             
@@ -509,7 +536,7 @@ def scrape_emails(company_name, cfo_name, treasurer_name, ceo_name):
                     "format": fmt,
                     "cfo_email": cfo_email,
                     "treasurer_email": treasurer_email,
-                    "source_email": all_emails[0] if all_emails else None,
+                    "source_email": source_email,
                     "source": source_method
                 }
         return {"error": "No real emails found"}

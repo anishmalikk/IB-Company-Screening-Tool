@@ -2,11 +2,14 @@
 
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from exec_scraper import get_execs_via_serp
+from ceo_cfo_extractor import get_ceo_cfo_executives, get_execs_via_serp
+from treasurer_extractor import get_treasurer_info
 from get_industry import get_industry_and_blurb, openai_client
 from promptand10q import get_latest_10q_link_for_ticker
 from email_scraper import scrape_emails
 from promptand10q import run_prompt_generation_pipeline
+# New intelligent systems
+from intelligent_email_scraper import intelligent_scrape_emails
 import asyncio
 import os
 
@@ -22,6 +25,7 @@ app.add_middleware(
 )
 
 def parse_execs(exec_str):
+    """Legacy parsing function for backward compatibility"""
     lines = exec_str.splitlines()
     cfo = treasurer = ceo = None
     for line in lines:
@@ -32,6 +36,42 @@ def parse_execs(exec_str):
         elif line.lower().startswith("ceo:"):
             ceo = line.split(":", 1)[1].strip()
     return cfo, treasurer, ceo
+
+async def get_intelligent_executives(company_name: str):
+    """Get executives using the split CEO/CFO and treasurer extraction systems"""
+    try:
+        # Get CEO/CFO using the dedicated extractor
+        ceo_cfo_result = await get_ceo_cfo_executives(company_name)
+        ceo = ceo_cfo_result.get("ceo")
+        cfo = ceo_cfo_result.get("cfo")
+        
+        # Get treasurer using the dedicated extractor
+        treasurer_result = await get_treasurer_info(company_name)
+        treasurer = treasurer_result.get("treasurer", "same")
+        treasurer_metadata = treasurer_result.get("treasurer_metadata", {})
+        
+        return {
+            "cfo": cfo,
+            "treasurer": treasurer,
+            "ceo": ceo,
+            "treasurer_metadata": treasurer_metadata
+        }
+    except Exception as e:
+        # Fallback to legacy system
+        print(f"Split system failed, using legacy: {e}")
+        legacy_exec_str = await get_execs_via_serp(company_name)
+        cfo, treasurer, ceo = parse_execs(legacy_exec_str)
+        return {
+            "cfo": cfo,
+            "treasurer": treasurer,
+            "ceo": ceo,
+            "treasurer_metadata": {
+                "confidence": "legacy",
+                "status": "fallback",
+                "email_strategy": "use_cfo_only",
+                "recommendation": "Used legacy system due to error"
+            }
+        }
 
 
 
@@ -51,13 +91,8 @@ async def company_info(
     # Get executives if requested
     if include_executives:
         try:
-            execs_str = await get_execs_via_serp(company_name)
-            cfo, treasurer, ceo = parse_execs(execs_str)
-            result["executives"] = {
-                "cfo": cfo,
-                "treasurer": treasurer,
-                "ceo": ceo
-            }
+            exec_data = await get_intelligent_executives(company_name)
+            result["executives"] = exec_data
         except Exception as e:
             result["executives"] = {"error": f"Failed to get executives: {str(e)}"}
     
@@ -66,17 +101,32 @@ async def company_info(
         try:
             # Get executives first if not already included
             if not include_executives:
-                execs_str = await get_execs_via_serp(company_name)
-                cfo, treasurer, ceo = parse_execs(execs_str)
+                exec_data = await get_intelligent_executives(company_name)
+                cfo = exec_data.get("cfo")
+                ceo = exec_data.get("ceo")
             else:
                 cfo = result.get("executives", {}).get("cfo")
-                treasurer = result.get("executives", {}).get("treasurer")
                 ceo = result.get("executives", {}).get("ceo")
             
-            email_info = scrape_emails(company_name, cfo, treasurer, ceo)
+            # Use intelligent email scraper (treasurer is determined automatically)
+            email_info = await intelligent_scrape_emails(company_name, cfo, "", ceo)
             result["emails"] = email_info
         except Exception as e:
-            result["emails"] = {"error": f"Failed to get emails: {str(e)}"}
+            # Fallback to legacy email system
+            try:
+                if not include_executives:
+                    execs_str = await get_execs_via_serp(company_name)
+                    cfo, treasurer, ceo = parse_execs(execs_str)
+                else:
+                    cfo = result.get("executives", {}).get("cfo")
+                    treasurer = result.get("executives", {}).get("treasurer")
+                    ceo = result.get("executives", {}).get("ceo")
+                
+                email_info = scrape_emails(company_name, cfo, treasurer, ceo)
+                email_info["fallback_reason"] = f"Intelligent system failed: {str(e)}"
+                result["emails"] = email_info
+            except Exception as e2:
+                result["emails"] = {"error": f"Failed to get emails: {str(e2)}"}
     
     # Get industry and blurb if requested
     if include_industry or include_industry_blurb:

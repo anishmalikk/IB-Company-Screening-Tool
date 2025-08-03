@@ -89,12 +89,56 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p class="error-message">${data.executives.error}</p>
                 `;
             } else {
-                executivesSection.innerHTML = `
-                    <h3>Executive Information</h3>
-                    ${data.executives.ceo ? `<p><strong>CEO:</strong> ${data.executives.ceo}</p>` : ''}
-                    ${data.executives.cfo ? `<p><strong>CFO:</strong> ${data.executives.cfo}</p>` : ''}
-                    ${data.executives.treasurer ? `<p><strong>Treasurer:</strong> ${data.executives.treasurer}</p>` : ''}
-                `;
+                let executiveContent = '<h3>Executive Information</h3>';
+                
+                // Basic executive info
+                if (data.executives.ceo) {
+                    executiveContent += `<p><strong>CEO:</strong> ${data.executives.ceo}</p>`;
+                }
+                if (data.executives.cfo) {
+                    executiveContent += `<p><strong>CFO:</strong> ${data.executives.cfo}</p>`;
+                }
+                if (data.executives.treasurer) {
+                    executiveContent += `<p><strong>Treasurer:</strong> ${data.executives.treasurer}</p>`;
+                }
+                
+                // Enhanced treasurer metadata from intelligent system
+                if (data.executives.treasurer_metadata) {
+                    const metadata = data.executives.treasurer_metadata;
+                    
+                    executiveContent += '<div class="treasurer-metadata">';
+                    executiveContent += '<h4>Treasurer Detection Details</h4>';
+                    
+                    // Confidence indicator
+                    const confidenceColor = metadata.confidence === 'high' ? '#10b981' : 
+                                          metadata.confidence === 'medium' ? '#f59e0b' : '#ef4444';
+                    executiveContent += `<p><strong>Confidence:</strong> <span style="color: ${confidenceColor}; font-weight: bold;">${metadata.confidence}</span></p>`;
+                    
+                    // Status
+                    executiveContent += `<p><strong>Detection Status:</strong> ${metadata.status.replace(/_/g, ' ')}</p>`;
+                    
+                    // Email strategy
+                    executiveContent += `<p><strong>Email Strategy:</strong> ${metadata.email_strategy.replace(/_/g, ' ')}</p>`;
+                    
+                    // Recommendation
+                    if (metadata.recommendation) {
+                        executiveContent += `<p><strong>System Recommendation:</strong> <em>${metadata.recommendation}</em></p>`;
+                    }
+                    
+                    // Multiple candidates
+                    if (metadata.candidates && metadata.candidates.length > 0) {
+                        executiveContent += '<p><strong>All Candidates Found:</strong></p>';
+                        executiveContent += '<ul>';
+                        metadata.candidates.forEach(candidate => {
+                            executiveContent += `<li>${candidate}</li>`;
+                        });
+                        executiveContent += '</ul>';
+                    }
+                    
+                    executiveContent += '</div>';
+                }
+                
+                executivesSection.innerHTML = executiveContent;
             }
             resultsContent.appendChild(executivesSection);
         }
@@ -115,15 +159,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.emails.cfo_email) {
                     emailContent += `<p><strong>CFO Email:</strong> ${data.emails.cfo_email}</p>`;
                 }
+                
+                // Enhanced treasurer email handling
                 if (data.emails.treasurer_email) {
                     emailContent += `<p><strong>Treasurer Email:</strong> ${data.emails.treasurer_email}</p>`;
+                } else if (data.emails.treasurer_status) {
+                    const statusColor = data.emails.treasurer_status === 'provided' ? '#10b981' : 
+                                      data.emails.treasurer_status === 'skipped_due_to_uncertainty' ? '#f59e0b' : '#6b7280';
+                    emailContent += `<p><strong>Treasurer Email:</strong> <span style="color: ${statusColor};">${data.emails.treasurer_status.replace(/_/g, ' ')}</span></p>`;
                 }
+                
                 if (data.emails.domain) {
                     emailContent += `<p><strong>Email Domain:</strong> ${data.emails.domain}</p>`;
                 }
                 if (data.emails.format) {
                     emailContent += `<p><strong>Email Format:</strong> ${data.emails.format}</p>`;
                 }
+                
+                // Intelligent system email metadata
+                if (data.emails.strategy_used) {
+                    emailContent += `<p><strong>Strategy Used:</strong> ${data.emails.strategy_used.replace(/_/g, ' ')}</p>`;
+                }
+                
+                if (data.emails.uncertainty_reason) {
+                    emailContent += '<div class="email-uncertainty">';
+                    emailContent += `<p><strong>Why no treasurer email:</strong> <em>${data.emails.uncertainty_reason}</em></p>`;
+                    emailContent += '</div>';
+                }
+                
+                // Legacy email detection info (fallback)
                 if (data.emails.source_email) {
                     emailContent += `<p><strong>Source Email:</strong> ${data.emails.source_email}</p>`;
                 }
@@ -132,6 +196,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 if (data.emails.source) {
                     emailContent += `<p><strong>Detection Method:</strong> ${data.emails.source}</p>`;
+                }
+                
+
+                
+                // Fallback reason for legacy system
+                if (data.emails.fallback_reason) {
+                    emailContent += `<div class="fallback-notice" style="background: #fef3c7; padding: 10px; border-radius: 5px; margin-top: 10px;">`;
+                    emailContent += `<p><strong>Note:</strong> Used legacy email system. ${data.emails.fallback_reason}</p>`;
+                    emailContent += `</div>`;
                 }
                 
                 // If no emails were found, show a message
@@ -246,6 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             resultsContent.appendChild(linkSection);
         }
+
 
         resultsContainer.style.display = 'block';
     }

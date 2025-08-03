@@ -1,6 +1,9 @@
-# exec_scraper.py
+# treasurer_extractor.py
 
 import os
+import re
+from typing import Optional, Dict, List
+from dataclasses import dataclass
 from llm_client import get_llm_client
 from serpapi.google_search import GoogleSearch
 import requests
@@ -8,9 +11,6 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import asyncio
 from playwright.async_api import async_playwright
-import re
-from datetime import datetime
-from typing import Optional
 
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4.1-nano")
@@ -18,6 +18,25 @@ MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4.1-nano")
 LEADERSHIP_KEYWORDS = [
     "leadership", "executive", "management", "officers", "team", "board", "directors"
 ]
+
+@dataclass
+class TreasurerCandidate:
+    """Represents a potential treasurer candidate"""
+    name: str
+    confidence: float  # 0.0 to 1.0
+    source: str  # e.g., "leadership_page", "search_results", "linkedin_snippet"
+    evidence: str  # Supporting evidence text
+    potential_issues: List[str]  # e.g., ["outdated_info", "unclear_current_role"]
+
+@dataclass
+class TreasurerDetectionResult:
+    """Structured result for treasurer detection"""
+    status: str  # "single_confident", "multiple_candidates", "uncertain", "cfo_treasurer_combo", "none_found"
+    primary_treasurer: Optional[str]  # Best candidate if confident
+    candidates: List[TreasurerCandidate]  # All potential candidates
+    confidence_level: str  # "high", "medium", "low"
+    recommendation: str  # What to do with this result
+    email_strategy: str  # "use_treasurer", "use_cfo_only", "provide_format_only"
 
 # ============================================================================
 # SIMPLIFIED HIGH-ACCURACY TREASURER DETECTION SYSTEM
@@ -240,11 +259,11 @@ class SimplifiedTreasurerDetector:
 treasurer_detector = SimplifiedTreasurerDetector()
 
 # ============================================================================
-# UPDATED FUNCTIONS USING SIMPLIFIED APPROACH
+# TREASURER EXTRACTION FUNCTIONS
 # ============================================================================
 
-
 def fetch_serp_results(company_name: str, query: str, num_results: int = 20) -> str:
+    """Fetch search results for treasurer extraction"""
     search = GoogleSearch({
         "q": f"{company_name} {query}",
         "api_key": SERPAPI_API_KEY,
@@ -256,109 +275,14 @@ def fetch_serp_results(company_name: str, query: str, num_results: int = 20) -> 
     for result in results.get("organic_results", []):
         snippet = result.get("snippet")
         if snippet:
-            #print(snippet)
             text_blobs.append(snippet)
 
     return "\n".join(text_blobs)
 
-
-def fetch_leadership_page_snippets(company_name: str) -> str:
-    return fetch_serp_results(company_name, "leadership site")
-
-
-def parse_leadership_page_for_treasurer(leadership_text: str, company_name: str) -> str:
-    """
-    Step 1: Parse leadership page text using simplified regex approach.
-    Returns treasurer name if found, empty string if not found.
-    """
-    if not leadership_text:
-        return ""
-    
-    # Use the simplified detector
-    treasurer_name = treasurer_detector.extract_treasurer_name(leadership_text, company_name)
-    
-    if treasurer_name:
-        return f"Treasurer (or closest): {treasurer_name}"
-    
-    return ""
-
-
-# Removed: is_outdated_treasurer_info() - now handled by SimplifiedTreasurerDetector
-
-
-def fetch_treasurer_linkedin_search(company_name: str) -> str:
-    """
-    Step 2: Simple treasurer search - returns raw snippets for regex analysis.
-    """
-    search = GoogleSearch({
-        "q": f'"{company_name}" "treasurer"',
-        "api_key": SERPAPI_API_KEY,
-        "num": 10  # First page only
-    })
-    results = search.get_dict()
-    all_snippets = []
-    
-    for result in results.get("organic_results", []):
-        snippet = result.get("snippet", "")
-        title = result.get("title", "")
-        
-        if snippet and "treasurer" in snippet.lower():
-            all_snippets.append(f"{title}\n{snippet}")
-    
-    return "\n---\n".join(all_snippets[:5])  # Top 5 results only
-
-
-def format_exec_info_with_treasurer_fallback(ceo_cfo_text: str, leadership_text: str, 
-                                           treasurer_from_leadership: str, treasurer_search_text: str, 
-                                           company_name: str) -> str:
-    """
-    Streamlined approach using simplified regex-based treasurer detection.
-    """
-    
-    # Combine all treasurer sources for analysis
-    all_treasurer_sources = ""
-    if treasurer_from_leadership:
-        all_treasurer_sources += treasurer_from_leadership + "\n"
-    if treasurer_search_text:
-        all_treasurer_sources += treasurer_search_text
-    
-    # Get treasurer recommendation using simplified detector
-    treasurer_recommendation = treasurer_detector.get_treasurer_recommendation(all_treasurer_sources, company_name)
-    
-    # Use LLM only for CEO/CFO formatting (which works well) + apply our treasurer recommendation
-    prompt = f"""
-I need to do a public screen on {company_name}. Tell me their current CEO, CFO, and Treasurer.
-
-IMPORTANT: 
-- Only extract names that are clearly mentioned in the provided snippets. Do not make up or guess names.
-- For CFO, look for the MOST RECENT/current CFO mentioned. If there are multiple CFOs mentioned, choose the one with the most recent date or current role.
-- Ignore former, past, or interim CFOs unless they are clearly the current one.
-
-TREASURER: Use exactly this value: {treasurer_recommendation}
-
-Format (no extra words):
-CFO: ...
-Treasurer (or closest): {treasurer_recommendation}
-CEO: ...
-
-CEO and CFO snippets:
----
-{ceo_cfo_text}
----
-"""
-    
-    client = get_llm_client()
-    response = client.chat.completions.create(
-        model=MODEL_NAME,
-        messages=[{"role": "user", "content": prompt}]
-    )
-    content = response.choices[0].message.content
-    return content.strip() if content else ""
-
-
 def fetch_leadership_page_url(company_name: str) -> str:
+    """Get leadership page URL for treasurer extraction"""
     search = GoogleSearch({
-        "q": f"{company_name} CEO CFO Treasurer",
+        "q": f"{company_name} treasurer executives",
         "api_key": SERPAPI_API_KEY,
         "num": 10
     })
@@ -393,7 +317,6 @@ def fetch_leadership_page_url(company_name: str) -> str:
             return link
     return ""
 
-
 async def get_leadership_page_text(url: str) -> str:
     """Scrape and extract plain text from leadership page using Playwright, fallback to requests."""
     try:
@@ -424,45 +347,104 @@ async def get_leadership_page_text(url: str) -> str:
             print(f"Requests fallback error: {e2}")
             return ""
 
-
-def get_execs_via_serp_sync(company_name: str) -> str:
-    """Sync wrapper for backward compatibility if needed."""
-    return asyncio.run(get_execs_via_serp(company_name))
-
-async def get_execs_via_serp(company_name: str) -> str:
+def fetch_treasurer_linkedin_search(company_name: str) -> str:
     """
-    Implements the 3-step treasurer extraction workflow:
-    1. Check leadership page for treasurer or CFO+treasurer
-    2. If not found, search LinkedIn via Google (first page only)
-    3. Default to "same" if not confidently found
+    Simple treasurer search - returns raw snippets for regex analysis.
     """
-    # Get CEO/CFO snippets (this works well already)
-    ceo_cfo_text = fetch_serp_results(company_name, "CEO CFO")
+    search = GoogleSearch({
+        "q": f'"{company_name}" "treasurer"',
+        "api_key": SERPAPI_API_KEY,
+        "num": 10  # First page only
+    })
+    results = search.get_dict()
+    all_snippets = []
     
-    # Get leadership page
-    leadership_url = fetch_leadership_page_url(company_name)
-    leadership_text = await get_leadership_page_text(leadership_url) if leadership_url else ""
+    for result in results.get("organic_results", []):
+        snippet = result.get("snippet", "")
+        title = result.get("title", "")
+        
+        if snippet and "treasurer" in snippet.lower():
+            all_snippets.append(f"{title}\n{snippet}")
     
-    # STEP 1: Check leadership page for treasurer first
-    treasurer_from_leadership = parse_leadership_page_for_treasurer(leadership_text, company_name)
+    return "\n---\n".join(all_snippets[:5])  # Top 5 results only
+
+def parse_leadership_page_for_treasurer(leadership_text: str, company_name: str) -> str:
+    """
+    Step 1: Parse leadership page text using simplified regex approach.
+    Returns treasurer name if found, empty string if not found.
+    """
+    if not leadership_text:
+        return ""
     
-    # STEP 2: If not found, do targeted LinkedIn search
-    treasurer_search_text = ""
-    if not treasurer_from_leadership:
-        treasurer_search_text = fetch_treasurer_linkedin_search(company_name)
+    # Use the simplified detector
+    treasurer_name = treasurer_detector.extract_treasurer_name(leadership_text, company_name)
     
-    # STEP 3: Format with fallback logic (defaults to "same" if uncertain)
-    return format_exec_info_with_treasurer_fallback(
-        ceo_cfo_text, leadership_text, treasurer_from_leadership, 
-        treasurer_search_text, company_name
-    )
+    if treasurer_name:
+        return f"Treasurer (or closest): {treasurer_name}"
+    
+    return ""
+
+async def get_treasurer_info(company_name: str) -> Dict[str, any]:
+    """
+    Main function to extract treasurer information.
+    Returns a dictionary with treasurer information and metadata.
+    """
+    try:
+        # Get leadership page
+        leadership_url = fetch_leadership_page_url(company_name)
+        leadership_text = await get_leadership_page_text(leadership_url) if leadership_url else ""
+        
+        # STEP 1: Check leadership page for treasurer first
+        treasurer_from_leadership = parse_leadership_page_for_treasurer(leadership_text, company_name)
+        
+        # STEP 2: If not found, do targeted LinkedIn search
+        treasurer_search_text = ""
+        if not treasurer_from_leadership:
+            treasurer_search_text = fetch_treasurer_linkedin_search(company_name)
+        
+        # STEP 3: Get treasurer recommendation using simplified detector
+        all_treasurer_sources = ""
+        if treasurer_from_leadership:
+            all_treasurer_sources += treasurer_from_leadership + "\n"
+        if treasurer_search_text:
+            all_treasurer_sources += treasurer_search_text
+        
+        treasurer_recommendation = treasurer_detector.get_treasurer_recommendation(all_treasurer_sources, company_name)
+        
+        # Determine confidence and metadata
+        if treasurer_recommendation == "same":
+            confidence = "high" if treasurer_detector.is_cfo_treasurer_combo(all_treasurer_sources) else "low"
+            status = "cfo_treasurer_combo" if treasurer_detector.is_cfo_treasurer_combo(all_treasurer_sources) else "none_found"
+        else:
+            confidence = "medium"  # Could be enhanced with more sophisticated confidence scoring
+            status = "single_candidate"
+        
+        return {
+            "treasurer": treasurer_recommendation,
+            "treasurer_metadata": {
+                "confidence": confidence,
+                "status": status,
+                "email_strategy": "use_cfo_only" if treasurer_recommendation == "same" else "use_treasurer",
+                "recommendation": f"Found: {treasurer_recommendation}",
+                "candidates": [treasurer_recommendation] if treasurer_recommendation != "same" else []
+            }
+        }
+        
+    except Exception as e:
+        print(f"Error extracting treasurer for {company_name}: {e}")
+        return {
+            "treasurer": "same",
+            "treasurer_metadata": {
+                "confidence": "low",
+                "status": "error",
+                "email_strategy": "use_cfo_only",
+                "recommendation": f"Error occurred: {str(e)}",
+                "candidates": []
+            }
+        }
 
 # Legacy function for backward compatibility
-def fetch_treasurer_search_snippets(company_name: str) -> str:
-    return fetch_treasurer_linkedin_search(company_name)
-
-def format_exec_info(snippets_ceo_cfo: str, leadership_snippets: str, treasurer_snippets: str, company_name: str) -> str:
-    # Legacy function - redirects to new implementation
-    return format_exec_info_with_treasurer_fallback(
-        snippets_ceo_cfo, leadership_snippets, "", treasurer_snippets, company_name
-    )
+def get_treasurer_recommendation_simple(company_name: str) -> str:
+    """Simple function that returns just the treasurer recommendation string"""
+    result = asyncio.run(get_treasurer_info(company_name))
+    return result.get("treasurer", "same") 
