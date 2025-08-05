@@ -448,7 +448,7 @@ Company Name Input
 │                    AI Analysis Phase                        │
 ├─────────────────────────────────────────────────────────────┤
 │ 1. Structured Prompt Construction                           │
-│ 2. LLM Credit Rating Extraction                            │
+│ 2. LLM Credit Rating Extraction                             │
 │ 3. Format Validation & Output                               │
 └─────────────────────────────────────────────────────────────┘
        ↓
@@ -648,7 +648,7 @@ Company Ticker Input
 │                    SEC Filing Discovery Phase               │
 ├─────────────────────────────────────────────────────────────┤
 │ 1. Ticker to CIK Mapping                                    │
-│ 2. Latest 10-Q/10-K Filing Retrieval                       │
+│ 2. Latest 10-Q/10-K Filing Retrieval                        │
 │ 3. Document Download & Parsing                              │
 └─────────────────────────────────────────────────────────────┘
        ↓
