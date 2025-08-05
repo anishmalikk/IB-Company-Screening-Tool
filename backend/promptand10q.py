@@ -102,10 +102,10 @@ def generate_manual_gpt_prompt(facility_list_10q: str, facility_list_10k: str, h
     Returns plaintext prompt that can be used with GPT online.
     """
     prompt = f"""
-Your task is to extract the full debt capital stack for this company using the HTML provided. You must:
+Your task is to extract the **full debt capital stack** for this company using the full HTML filings provided. You must:
 
-- Include every facility listed above if active. Ignore if outdated or not a debt instrument.
-- Add any additional **active** facilities not listed above.
+- Include **every facility listed above** if it is active. Ignore it if outdated or not an actual debt instrument.
+- Add **any additional active facilities** that are not listed above.
 - Do **not omit** any active:
   - Term loans
   - Revolving credit facilities
@@ -117,6 +117,14 @@ Your task is to extract the full debt capital stack for this company using the H
 - ❗️**NEVER put drawn or usage amount in the main line.**  
   Use the full committed facility amount in the main bullet.  
   If the full amount is not disclosed, leave it out of the main bullet and list usage in the bullets.
+
+- **You MUST run separate searches or lookups to capture senior notes if they are not near the credit facility section. Do not skip or assume.**
+
+- **Do not return the response until you have exhaustively searched the full document(s) for:**
+  1. All credit facilities and term loans
+  2. All senior notes (even if in separate tables or footnotes)
+  3. All receivables/factoring programs
+  4. Hedging/restructuring disclosures relevant to the debt stack
 
 - Follow this strict output format for every debt instrument:
 
@@ -136,7 +144,7 @@ Your task is to extract the full debt capital stack for this company using the H
 
 - Do not group or summarize. **List each active instrument individually with full details.**
 
-Begin now using the full HTML filings.
+EXTREMELY IMPORTANT: If you are not 100% confident that all facilities—including every senior note, or other debt instrument—have been found, do not respond. Run additional lookups until complete.
 """
 
 

@@ -8,6 +8,7 @@ from get_industry import get_industry_and_blurb, openai_client
 from promptand10q import get_latest_10q_link_for_ticker, get_latest_10k_link_for_ticker
 from email_scraper import scrape_emails
 from promptand10q import run_prompt_generation_pipeline, run_10k_prompt_generation_pipeline
+from getcreditrating import get_company_credit_rating
 import asyncio
 import os
 
@@ -98,7 +99,8 @@ async def company_info(
     include_industry_blurb: bool = Query(True, description="Include industry blurb"),
     include_10q_link: bool = Query(True, description="Include latest 10-Q link"),
     include_10k_link: bool = Query(False, description="Include latest 10-K link"),
-    include_debt_liquidity: bool = Query(True, description="Include debt and liquidity summary")
+    include_debt_liquidity: bool = Query(True, description="Include debt and liquidity summary"),
+    include_credit_rating: bool = Query(True, description="Include credit rating")
 ):
     result = {}
     
@@ -243,6 +245,17 @@ async def company_info(
             result["debt_analysis_prompt"] = f"Error: {str(e)}"
             result["facility_list_10q"] = f"Error: {str(e)}"
             result["facility_list_10k"] = f"Error: {str(e)}"
+    
+    # Get credit rating if requested
+    if include_credit_rating:
+        try:
+            print(f"🔍 Getting credit rating for company: {company_name}")
+            credit_rating = get_company_credit_rating(company_name)
+            print(f"✅ Credit rating: {credit_rating}")
+            result["credit_rating"] = credit_rating
+        except Exception as e:
+            print(f"❌ Error getting credit rating: {str(e)}")
+            result["credit_rating"] = f"Error: {str(e)}"
     
     return result
 

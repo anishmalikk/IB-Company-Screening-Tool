@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const include10qLink = document.getElementById('include_10q_link').checked;
         const include10kLink = document.getElementById('include_10k_link').checked;
         const includeDebtLiquidity = document.getElementById('include_debt_liquidity').checked;
+        const includeCreditRating = document.getElementById('include_credit_rating').checked;
 
         if (!companyName) {
             alert('Please enter a company name');
@@ -27,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        if (!includeExecutives && !includeEmails && !includeIndustry && !includeIndustryBlurb && !include10qLink && !include10kLink && !includeDebtLiquidity) {
+        if (!includeExecutives && !includeEmails && !includeIndustry && !includeIndustryBlurb && !include10qLink && !include10kLink && !includeDebtLiquidity && !includeCreditRating) {
             alert('Please select at least one function to run');
             return;
         }
@@ -45,7 +46,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 include_industry_blurb: includeIndustryBlurb,
                 include_10q_link: include10qLink,
                 include_10k_link: include10kLink,
-                include_debt_liquidity: includeDebtLiquidity
+                include_debt_liquidity: includeDebtLiquidity,
+                include_credit_rating: includeCreditRating
             });
 
             const response = await fetch(`http://localhost:8000/company_info/${encodeURIComponent(companyName)}/${tickerSymbol}?${params}`);
@@ -81,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <h3>Company Overview</h3>
             <p><strong>Company:</strong> ${companyName}</p>
             <p><strong>Ticker:</strong> ${tickerSymbol}</p>
+            ${data.credit_rating ? `<p><strong>Credit Rating:</strong> ${data.credit_rating}</p>` : ''}
             ${data.industry ? `<p><strong>Industry:</strong> ${data.industry}</p>` : ''}
             ${data.industry_blurb ? `<p><strong>Industry Description:</strong> ${data.industry_blurb}</p>` : ''}
         `;
