@@ -102,11 +102,13 @@ def generate_manual_gpt_prompt(facility_list_10q: str, facility_list_10k: str, h
     Returns plaintext prompt that can be used with GPT online.
     """
     prompt = f"""
-Your task is to extract the **full debt capital stack** for this company using the full HTML filings provided. You must:
+You are a financial analyst assistant. Your task is to extract the **complete and accurate debt capital stack** for this company using the **entire HTML filing(s)** provided. You must:
 
-- Include **every facility listed above** if it is active. Ignore it if outdated or not an actual debt instrument.
-- Add **any additional active facilities** that are not listed above.
-- Do **not omit** any active:
+---
+
+🎯 **INCLUSION RULES:**
+- Include **every active** debt instrument, whether listed explicitly or mentioned in footnotes or tables.
+- Do **NOT omit** any:
   - Term loans
   - Revolving credit facilities
   - Senior unsecured notes (USD or foreign currency) — **each one must be listed separately**
@@ -114,39 +116,115 @@ Your task is to extract the **full debt capital stack** for this company using t
   - Receivables purchase agreements
   - Factoring or discounting agreements
 
-- ❗️**NEVER put drawn or usage amount in the main line.**  
-  Use the full committed facility amount in the main bullet.  
-  If the full amount is not disclosed, leave it out of the main bullet and list usage in the bullets.
+---
 
-- **You MUST run separate searches or lookups to capture senior notes if they are not near the credit facility section. Do not skip or assume.**
-
-- **Do not return the response until you have exhaustively searched the full document(s) for:**
-  1. All credit facilities and term loans
-  2. All senior notes (even if in separate tables or footnotes)
-  3. All receivables/factoring programs
-  4. Hedging/restructuring disclosures relevant to the debt stack
-
-- Follow this strict output format for every debt instrument:
+📏 **FORMATTING REQUIREMENTS:**
+- For each instrument, use this strict format:
 
   $[Full Facility Amount] [Facility Type] @ [Interest Rate] mat. MM/YYYY (Lead Bank)  
     - Bullet 1  
     - Bullet 2
 
-- If the full amount, interest rate, or lead bank is not disclosed:
-  - Leave them out of the main bullet line.
-  - Include a supporting bullet stating that the info is missing.
+- If full facility amount, rate, or lead bank is not disclosed:
+  - Omit it from the main bullet.
+  - Include a bullet explaining which details are missing.
 
-- CRITICAL: **List all instruments from earliest to latest maturity.**
+- ❗️NEVER put **drawn, outstanding, or usage amounts** in the main bullet — only the full committed amount.
 
-- For receivables or factoring agreements, include even if not traditional debt, but label them clearly.
+---
 
-- If instruments are hedged, swapped, partially prepaid, or restructured, explain in bullets.
+📚 **SEARCH AND VERIFICATION REQUIREMENTS:**
+- You MUST:
+  1. Search for all term loans and revolving credit facilities
+  2. Search for ALL senior unsecured notes — even if found in separate sections, footnotes, or tables
+  3. Search for all working capital or AR facilities, receivables/factoring agreements, even if not labeled as traditional debt
+  4. Capture hedging, swaps, restructurings, or covenant notes related to any facility
 
-- Do not group or summarize. **List each active instrument individually with full details.**
+---
 
-EXTREMELY IMPORTANT: If you are not 100% confident that all facilities—including every senior note, or other debt instrument—have been found, do not respond. Run additional lookups until complete.
+📅 **ORDERING:**
+- List all instruments strictly from **earliest to latest maturity**.
+- Do **not group or summarize** instruments. List each one individually.
+
+---
+
+🚨 **FAILSAFE CLAUSE:**
+If you are **not 100% confident** that all relevant debt instruments — including **senior notes in buried sections** — have been found, **do not respond** yet. Search further.
+
+---
+
+Your response must be complete, structured, and ready for downstream formatting.
 """
 
+
+
+    return prompt
+
+def generate_debt_summary_prompt():
+    """
+    Generate a prompt for converting structured debt stack to concise one-line summaries.
+    """
+    prompt = """
+Using the full HTML filings and the debt stack you generated, you will now generate a concise summary of the debt stack.
+
+---
+
+Your task is to convert the above debt stack into concise, one-line summary notes that highlight key deal terms. Follow these rules exactly:
+
+---
+
+🎯 **INCLUSION RULES:**
+For each facility, include:
+- Full amount (e.g., "$750M")
+- Facility type (e.g., "Senior Notes", "Term Loan", "Revolver")
+- Interest rate (e.g., "@ 6.375%" or "@ SOFR + 150 bps") if disclosed
+- Maturity in "mat. M/YYYY" or "mat. YYYY" format
+- Lead bank in parentheses (e.g., "(JPM)") if disclosed
+
+---
+
+📅 **MATURITY-BASED GROUPING RULE (for Senior Notes):**
+- **Senior notes maturing in 2027 or earlier** → write them as individual lines  
+- **Senior notes maturing in 2028 or later** → group them into a single line using this format:  
+  > $[total] Senior Notes @ [rate range]% mat. [first year]–[last year]
+
+  Example:  
+  > $3.75B Senior Notes @ 6.35–6.95% mat. 2028–2033
+
+  - You may approximate the **total amount** by summing the face values
+  - Use the **lowest and highest interest rates** in the group as the range
+  - Do **not** include banks, bullets, or partial commentary for the grouped notes
+
+---
+
+🔍 **OTHER RULES:**
+- Do NOT include bullets, guarantee notes, hedging info, or accounting treatment
+- Preserve original currencies (e.g., CHF, EUR) if applicable
+- Do NOT mention missing data — omit silently
+- One line per facility unless aggregation is explicitly allowed above
+
+---
+
+📌 **EXAMPLES:**
+
+From:
+$499M Senior Unsecured Notes @ 3.200% mat. 10/2026  
+  - Guaranteed
+
+To:
+$499M Senior Notes @ 3.200% mat. 10/2026
+
+From:
+$999M, $1.0B, $750M Senior Notes @ 6.35–6.95% mat. 2028–2033  
+  - Guaranteed  
+  - Some hedged
+
+To:
+$2.75B Senior Notes @ 6.35–6.95% mat. 2028–2033
+
+---
+
+🎯 Output only the final summary lines — no bullets, no commentary."""
 
     return prompt
 

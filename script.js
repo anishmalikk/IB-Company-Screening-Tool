@@ -385,6 +385,32 @@ document.addEventListener('DOMContentLoaded', function() {
                         `;
                     }
                     
+                    // Add debt summary prompt if available
+                    if (data.debt_summary_prompt && !data.debt_summary_prompt.startsWith('Error:')) {
+                        debtContent += `
+                            <div class="prompt-container" style="margin-top: 20px;">
+                                <h4>Debt Summary Prompt</h4>
+                                <p class="prompt-description">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Copy this prompt and use it with GPT to convert the debt analysis into concise one-line summaries:
+                                </p>
+                                <div class="prompt-text-container">
+                                    <textarea id="debtSummaryPromptText" class="prompt-textarea" readonly>${data.debt_summary_prompt}</textarea>
+                                    <button class="copy-btn" onclick="copyDebtSummaryPrompt()">
+                                        <i class="fas fa-copy"></i> Copy Prompt
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else if (data.debt_summary_prompt && data.debt_summary_prompt.startsWith('Error:')) {
+                        debtContent += `
+                            <div class="prompt-container" style="margin-top: 20px;">
+                                <h4>Debt Summary Prompt</h4>
+                                <p class="error-message">${data.debt_summary_prompt}</p>
+                            </div>
+                        `;
+                    }
+                    
                     debtSection.innerHTML = debtContent;
                 } else {
                     debtSection.innerHTML = `
@@ -740,6 +766,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Show success feedback
                 const copyBtn = document.querySelector('.copy-btn');
+                if (copyBtn) {
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    copyBtn.style.background = '#48bb78';
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.style.background = '';
+                    }, 2000);
+                }
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy prompt. Please select and copy manually.');
+            }
+        }
+    };
+
+    // Function to copy debt summary prompt
+    window.copyDebtSummaryPrompt = function() {
+        const textarea = document.getElementById('debtSummaryPromptText');
+        if (textarea) {
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                document.execCommand('copy');
+                
+                // Show success feedback
+                const copyBtn = textarea.parentElement.querySelector('.copy-btn');
                 if (copyBtn) {
                     const originalText = copyBtn.innerHTML;
                     copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';

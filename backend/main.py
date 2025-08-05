@@ -208,32 +208,36 @@ async def company_info(
             # Generate the debt analysis prompt
             print(f"🔍 Generating debt analysis prompt for ticker: {ticker}")
             
-            # Extract facilities from both 10-Q and 10-K
-            from promptand10q import run_prompt_generation_pipeline, run_10k_prompt_generation_pipeline, generate_manual_gpt_prompt, download_and_parse_10q, download_and_parse_10k, extract_facility_names_from_10q, extract_facility_names_from_10k
+            # Download and parse 10-Q and 10-K documents
+            from promptand10q import generate_manual_gpt_prompt, download_and_parse_10q, download_and_parse_10k
             
-            # Get 10-Q facilities
+            # Get 10-Q document
             tenq_soup, tenq_text, tenq_html = download_and_parse_10q(ticker)
-            tenq_facilities = ""
-            if tenq_soup:
-                tenq_facilities = extract_facility_names_from_10q(tenq_soup, tenq_text, debug=False)
             
-            # Get 10-K facilities
+            # Get 10-K document
             tenk_soup, tenk_text, tenk_html = download_and_parse_10k(ticker)
+            
+            # Set facility lists to empty since we're not using them
+            tenq_facilities = ""
             tenk_facilities = ""
-            if tenk_soup:
-                tenk_facilities = extract_facility_names_from_10k(tenk_soup, tenk_text, debug=False)
             
             # Generate manual prompt with both facility lists
             manual_prompt = generate_manual_gpt_prompt(tenq_facilities, tenk_facilities, tenq_html if tenq_html else "")
             
+            # Generate debt summary prompt
+            from promptand10q import generate_debt_summary_prompt
+            debt_summary_prompt = generate_debt_summary_prompt()
+            
             if manual_prompt:
                 result["debt_liquidity_summary"] = ["PDF file available for download"]
                 result["debt_analysis_prompt"] = manual_prompt
+                result["debt_summary_prompt"] = debt_summary_prompt
                 result["facility_list_10q"] = tenq_facilities
                 result["facility_list_10k"] = tenk_facilities
             else:
                 result["debt_liquidity_summary"] = ["PDF file available for download"]
                 result["debt_analysis_prompt"] = f"Error: Failed to generate prompt for {ticker}"
+                result["debt_summary_prompt"] = f"Error: Failed to generate summary prompt for {ticker}"
                 result["facility_list_10q"] = f"Error: Failed to extract facilities for {ticker}"
                 result["facility_list_10k"] = f"Error: Failed to extract facilities for {ticker}"
                 
@@ -243,6 +247,7 @@ async def company_info(
             result["latest_10q_link"] = f"Error: {str(e)}"
             result["latest_10k_link"] = f"Error: {str(e)}"
             result["debt_analysis_prompt"] = f"Error: {str(e)}"
+            result["debt_summary_prompt"] = f"Error: {str(e)}"
             result["facility_list_10q"] = f"Error: {str(e)}"
             result["facility_list_10k"] = f"Error: {str(e)}"
     
