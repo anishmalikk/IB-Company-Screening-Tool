@@ -1,9 +1,103 @@
 # ib-company-screener
 A comprehensive automated investment banking company screening platform that leverages advanced AI, SEC filings, and public data sources to provide detailed financial and executive intelligence.
 
+## Frontend Interface
+
+The platform provides a modern web interface (`frontend.html`) with the following features:
+
+### Search Interface
+- **Company Name Input**: Full company name (e.g., "Apple Inc.", "Microsoft Corporation")
+- **Ticker Symbol Input**: Stock ticker (e.g., "AAPL", "MSFT")
+- **Configurable Functions**: Checkbox selection for different data components
+
+### Available Data Components
+1. **Executive Information**: CEO, CFO, and Treasurer details
+2. **Email Information**: Constructed executive email addresses with domain and format detection
+3. **S&P Credit Rating**: Latest credit rating from S&P
+4. **Industry Information**: Industry classification and business description
+5. **SEC Filing Links**: Latest 10-Q and 10-K filing URLs
+6. **Debt and Liquidity Analysis**: Downloadable SEC filings and analysis prompts
+
+### Results Display
+- **Company Overview**: Basic company information with credit rating and industry
+- **Executive Details**: CEO, CFO, and Treasurer information with LinkedIn links for treasurer candidates
+- **Email Information**: Constructed emails with quality scoring and source information
+- **SEC Filings**: Downloadable 10-Q and 10-K files with custom naming
+- **Analysis Prompts**: Copyable GPT prompts for debt analysis and summary generation
+
+## Backend API Architecture
+
+The FastAPI server (`main.py`) provides a comprehensive REST API that orchestrates all screening components.
+
+### Main Endpoint: `/company_info/{company_name}/{ticker}`
+
+**Query Parameters:**
+- `include_executives` (bool): Executive information (default: true)
+- `include_emails` (bool): Email construction (default: true)
+- `include_credit_rating` (bool): S&P credit rating (default: true)
+- `include_industry` (bool): Industry classification (default: true)
+- `include_industry_blurb` (bool): Business description (default: true)
+- `include_10q_link` (bool): Latest 10-Q filing URL (default: true)
+- `include_10k_link` (bool): Latest 10-K filing URL (default: false)
+- `include_debt_liquidity` (bool): Debt analysis and prompts (default: true)
+
+**Response Structure:**
+```json
+{
+  "executives": {
+    "cfo": "Name",
+    "treasurer": "Name", 
+    "ceo": "Name",
+    "treasurer_metadata": {
+      "candidates": [
+        {
+          "name": "Candidate Name",
+          "linkedin_url": "LinkedIn URL",
+          "score": 0.95
+        }
+      ]
+    }
+  },
+  "emails": {
+    "domain": "@company.com",
+    "format": "first.last",
+    "cfo_email": "cfo@company.com",
+    "treasurer_email": "treasurer@company.com",
+    "all_discovered_emails": [
+      {
+        "email": "email@company.com",
+        "quality": "high",
+        "score": 0.95,
+        "source": "website"
+      }
+    ]
+  },
+  "credit_rating": "BBB+",
+  "industry": "Technology",
+  "industry_blurb": "3-sentence description",
+  "latest_10q_link": "SEC filing URL",
+  "latest_10k_link": "SEC filing URL",
+  "debt_liquidity_summary": ["Analysis results"],
+  "debt_analysis_prompt": "Manual GPT prompt",
+  "debt_summary_prompt": "Summary generation prompt"
+}
+```
+
+### File Download Endpoints
+
+**`/download_10q/{ticker}`**
+- Downloads 10-Q filing as HTML file
+- Optional `company_name` parameter for custom filename
+- Returns file with proper headers for browser download
+
+**`/download_10k/{ticker}`**
+- Downloads 10-K filing as HTML file
+- Optional `company_name` parameter for custom filename
+- Returns file with proper headers for browser download
+
 ## Executive Scraper Pipeline
 
-The `exec_scraper.py` module provides automated extraction of company leadership information (CEO, CFO, Treasurer) using a multi-source data pipeline.
+The `exec_scraper.py` module provides automated extraction of company leadership information using a multi-source data pipeline.
 
 ### Pipeline Overview
 
@@ -109,6 +203,68 @@ Formatted Executive Information Output
 - Cross-referencing between search results and company websites
 - Latest news consideration for recent leadership changes
 - LinkedIn and other credible source integration for treasurer information
+
+## Intelligent Treasurer System
+
+The `intelligent_treasurer_system.py` module provides advanced treasurer detection with uncertainty handling and multiple candidate ranking.
+
+### Key Features
+
+**Multi-Candidate Detection**
+- Returns multiple treasurer candidates with confidence scores
+- LinkedIn URL extraction for each candidate
+- Source quality assessment and ranking
+
+**Uncertainty Handling**
+- Transparent confidence levels (high, medium, low)
+- Fallback strategies for unclear results
+- Honest reporting of detection limitations
+
+**Enhanced Name Validation**
+- spaCy NER for name entity recognition
+- NLTK name database validation
+- Navigation term filtering
+- Company name similarity detection
+
+### Data Structures
+
+**`TreasurerCandidate`**
+```python
+@dataclass
+class TreasurerCandidate:
+    name: str
+    confidence: float  # 0.0 to 1.0
+    source: str  # e.g., "leadership_page", "search_results"
+    evidence: str  # Supporting evidence text
+    potential_issues: List[str]  # e.g., ["outdated_info"]
+    linkedin_url: Optional[str] = None
+```
+
+**`TreasurerDetectionResult`**
+```python
+@dataclass
+class TreasurerDetectionResult:
+    status: str  # "single_confident", "multiple_candidates", "uncertain"
+    primary_treasurer: Optional[str]
+    candidates: List[TreasurerCandidate]
+    confidence_level: str  # "high", "medium", "low"
+    recommendation: str
+    email_strategy: str  # "use_treasurer", "use_cfo_only"
+```
+
+### Detection Strategies
+
+**Source Integration**
+- Leadership page text analysis
+- Google search result parsing
+- LinkedIn snippet extraction
+- Cross-source validation
+
+**Confidence Assessment**
+- Context quality analysis
+- Recency validation
+- Role clarity assessment
+- Source credibility scoring
 
 ## Email Scraper Pipeline
 
@@ -271,6 +427,112 @@ Constructed Executive Email Addresses
 - Empty result handling with appropriate error messages
 - Timeout and API error handling
 
+## Credit Rating Pipeline
+
+The `getcreditrating.py` module provides automated extraction of S&P credit ratings using web search and AI-powered analysis.
+
+### Pipeline Overview
+
+```
+Company Name Input
+       ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    Web Search Phase                         │
+├─────────────────────────────────────────────────────────────┤
+│ 1. S&P Credit Rating Search (SerpAPI)                       │
+│ 2. Snippet Collection from Organic Results                  │
+│ 3. Context Aggregation (10 results)                         │
+└─────────────────────────────────────────────────────────────┘
+       ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    AI Analysis Phase                        │
+├─────────────────────────────────────────────────────────────┤
+│ 1. Structured Prompt Construction                           │
+│ 2. LLM Credit Rating Extraction                            │
+│ 3. Format Validation & Output                               │
+└─────────────────────────────────────────────────────────────┘
+       ↓
+Latest S&P Credit Rating
+```
+
+### Key Functions & Data Flow
+
+#### 1. Web Search Functions
+
+**`search_company_credit_rating(company_name: str)`**
+- Direct SerpAPI integration using GoogleSearch
+- Configurable result count (default: 10 results)
+- Error handling for API failures
+- Returns organic search results with snippets
+
+**Search Query Strategy**
+- Primary query: `"{company_name} S&P credit rating"`
+- Focuses on official S&P ratings
+- Optimized for credit rating context
+
+#### 2. Data Processing Functions
+
+**`extract_credit_rating_from_snippets(company_name: str, snippets: List[Dict])`**
+- Uses LLM to analyze search snippets
+- Extracts latest S&P credit rating
+- Handles multiple rating formats and sources
+- Returns standardized rating format
+
+**`get_company_credit_rating(company_name: str)`**
+- Main orchestration function combining search and AI analysis
+- Constructs comprehensive prompt with search context
+- Handles LLM response processing and formatting
+- Returns structured credit rating output
+
+#### 3. AI Analysis Functions
+
+**Prompt Construction Strategy**
+- **Focus**: Latest S&P credit rating extraction
+- **Format**: Standard rating format (e.g., "BBB+", "AA-")
+- **Context Integration**: Uses aggregated search snippets
+- **Validation**: Official S&P ratings only
+
+**LLM Processing**
+- Uses configurable model (default: gpt-4.1-nano)
+- Structured output format with clear examples
+- Error handling for empty or malformed responses
+
+### Main Entry Point
+
+**`get_company_credit_rating(company_name: str)`**
+- Single entry point for credit rating extraction
+- Returns latest S&P credit rating or "N/A"
+- Handles complete pipeline from search to AI analysis
+
+### Technical Details
+
+#### Environment Variables
+- `SERPAPI_API_KEY`: Required for web search functionality
+- `OPENAI_API_KEY`: Required for LLM analysis
+- `MODEL_NAME`: LLM model for analysis (default: gpt-4.1-nano)
+
+#### Dependencies
+- **serpapi**: Google search results
+- **OpenAI**: LLM client for AI-powered analysis
+- **os**: Environment variable management
+
+#### Output Format
+- **Credit Rating**: Standard S&P format (e.g., "BBB+", "AA-", "N/A")
+- **Error Handling**: Returns "N/A" for unavailable ratings
+- **Validation**: Focuses on official S&P ratings only
+
+#### Data Quality Features
+- Multi-source context aggregation from search results
+- Structured prompt with clear examples
+- Format validation for credit rating classification
+- Latest rating prioritization
+
+#### Error Handling
+- SerpAPI error handling with status code checking
+- Empty result handling with appropriate fallbacks
+- LLM response validation and formatting
+- Graceful degradation for API failures
+
 ## Industry & Company Blurb Pipeline
 
 The `get_industry.py` module provides automated extraction of company industry classification and business description using web search and AI-powered analysis.
@@ -373,9 +635,9 @@ Industry Classification + 3-Sentence Company Blurb
 - LLM response validation and formatting
 - Graceful degradation for API failures
 
-## 10-Q Analysis Pipeline
+## 10-Q & 10-K Analysis Pipeline
 
-The `promptand10q.py` module provides automated extraction and analysis of debt facilities from SEC 10-Q filings using AI-powered document parsing.
+The `promptand10q.py` module provides automated extraction and analysis of debt facilities from SEC 10-Q and 10-K filings using AI-powered document parsing.
 
 ### Pipeline Overview
 
@@ -386,7 +648,7 @@ Company Ticker Input
 │                    SEC Filing Discovery Phase               │
 ├─────────────────────────────────────────────────────────────┤
 │ 1. Ticker to CIK Mapping                                    │
-│ 2. Latest 10-Q Filing Retrieval                             │
+│ 2. Latest 10-Q/10-K Filing Retrieval                       │
 │ 3. Document Download & Parsing                              │
 └─────────────────────────────────────────────────────────────┘
        ↓
@@ -419,8 +681,20 @@ Facility List + Manual Analysis Prompt
 - Returns direct URL to filing document
 - Handles CIK formatting and accession number processing
 
+**`get_latest_10k_link_for_ticker(ticker: str)`**
+- Maps ticker to CIK using `ticker_utils.py`
+- Retrieves latest 10-K filing from SEC EDGAR
+- Returns direct URL to filing document
+- Handles CIK formatting and accession number processing
+
 **`download_and_parse_10q(ticker: str)`**
 - Downloads 10-Q HTML content from SEC
+- Parses document using BeautifulSoup
+- Extracts both HTML and text content
+- Returns structured document data
+
+**`download_and_parse_10k(ticker: str)`**
+- Downloads 10-K HTML content from SEC
 - Parses document using BeautifulSoup
 - Extracts both HTML and text content
 - Returns structured document data
@@ -434,6 +708,13 @@ Facility List + Manual Analysis Prompt
 - Uses specialized prompt for comprehensive extraction
 - Returns structured facility list
 
+**`extract_facility_names_from_10k(soup, text_content, debug=False)`**
+- First pass LLM analysis of 10-K document
+- Identifies all currently active debt facilities
+- Extracts facility names, currencies, maturities, types
+- Uses specialized prompt for comprehensive extraction
+- Returns structured facility list
+
 **LLM Analysis Strategy**
 - **Model**: Configurable via `10Q_MODEL_NAME` (default: gpt-4o-mini)
 - **Temperature**: 0.1 for consistent extraction
@@ -442,11 +723,16 @@ Facility List + Manual Analysis Prompt
 
 #### 3. Prompt Generation Functions
 
-**`generate_manual_gpt_prompt(facility_list: str, html_content: str)`**
+**`generate_manual_gpt_prompt(facility_list_10q: str, facility_list_10k: str, html_content: str)`**
 - Constructs detailed analysis prompt for manual GPT use
 - Integrates facility list with full HTML document
 - Provides structured format requirements
 - Includes maturity ordering and completeness instructions
+
+**`generate_debt_summary_prompt()`**
+- Creates prompt for converting debt analysis into concise summaries
+- Focuses on one-line facility summaries
+- Provides structured format for consistent output
 
 **Prompt Structure**
 - **Input**: Facility list + full HTML document
@@ -457,7 +743,13 @@ Facility List + Manual Analysis Prompt
 #### 4. Pipeline Orchestration
 
 **`run_prompt_generation_pipeline(ticker: str, debug=False)`**
-- Main orchestration function for complete pipeline
+- Main orchestration function for complete 10-Q pipeline
+- Coordinates document download, facility extraction, and prompt generation
+- Returns both facility list and manual analysis prompt
+- Handles error cases and debugging
+
+**`run_10k_prompt_generation_pipeline(ticker: str, debug=False)`**
+- Main orchestration function for complete 10-K pipeline
 - Coordinates document download, facility extraction, and prompt generation
 - Returns both facility list and manual analysis prompt
 - Handles error cases and debugging
@@ -468,8 +760,16 @@ Facility List + Manual Analysis Prompt
 - Returns direct URL to latest 10-Q filing
 - Used by both analysis pipeline and download endpoint
 
+**`get_latest_10k_link_for_ticker(ticker: str)`**
+- Returns direct URL to latest 10-K filing
+- Used by both analysis pipeline and download endpoint
+
 **`run_prompt_generation_pipeline(ticker: str, debug=False)`**
-- Complete pipeline for debt facility analysis
+- Complete pipeline for 10-Q debt facility analysis
+- Returns structured data for manual GPT analysis
+
+**`run_10k_prompt_generation_pipeline(ticker: str, debug=False)`**
+- Complete pipeline for 10-K debt facility analysis
 - Returns structured data for manual GPT analysis
 
 ### Technical Details
@@ -491,137 +791,13 @@ Facility List + Manual Analysis Prompt
 - Structured output format with key details
 - Maturity-based ordering for analysis
 - Missing information handling and reporting
+- Deduplication of facility listings
 
 #### Error Handling
 - CIK mapping failures with graceful degradation
 - SEC API error handling and retry logic
 - Document download failures with appropriate fallbacks
 - LLM analysis error handling and debugging support
-
-## FastAPI Server Pipeline
-
-The `main.py` module provides the REST API server that orchestrates all screening components and serves the frontend application.
-
-### Pipeline Overview
-
-```
-HTTP Request Input
-       ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    Request Processing Phase                 │
-├─────────────────────────────────────────────────────────────┤
-│ 1. Parameter Validation & Parsing                           │
-│ 2. Optional Component Selection                             │
-│ 3. Async Pipeline Orchestration                             │
-└─────────────────────────────────────────────────────────────┘
-       ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    Component Execution Phase                │
-├─────────────────────────────────────────────────────────────┤
-│ 1. Executive Information (exec_scraper)                     │
-│ 2. Email Construction (email_scraper)                       │
-│ 3. Industry Classification (get_industry)                   │
-│ 4. 10-Q Link Retrieval (promptand10q)                       │
-│ 5. Debt Analysis (promptand10q)                             │
-└─────────────────────────────────────────────────────────────┘
-       ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    Response Assembly Phase                  │
-├─────────────────────────────────────────────────────────────┤
-│ 1. Error Handling & Fallbacks                               │
-│ 2. Data Formatting & Validation                             │
-│ 3. Structured JSON Response                                 │
-└─────────────────────────────────────────────────────────────┘
-       ↓
-Structured Company Screening Response
-```
-
-### Key Endpoints & Data Flow
-
-#### 1. Main Screening Endpoint
-
-**`/company_info/{company_name}/{ticker}`**
-- **Method**: GET
-- **Parameters**: 
-  - `company_name`: Company name for search
-  - `ticker`: Stock ticker for SEC filings
-  - `include_executives`: Boolean flag (default: true)
-  - `include_emails`: Boolean flag (default: true)
-  - `include_industry`: Boolean flag (default: true)
-  - `include_industry_blurb`: Boolean flag (default: true)
-  - `include_10q_link`: Boolean flag (default: true)
-  - `include_debt_liquidity`: Boolean flag (default: true)
-
-**Response Structure**
-```json
-{
-  "executives": {
-    "cfo": "Name",
-    "treasurer": "Name", 
-    "ceo": "Name"
-  },
-  "emails": {
-    "domain": "@company.com",
-    "format": "first.last",
-    "cfo_email": "cfo@company.com",
-    "treasurer_email": "treasurer@company.com"
-  },
-  "industry": "Industry Classification",
-  "industry_blurb": "3-sentence description",
-  "latest_10q_link": "SEC filing URL",
-  "debt_liquidity_summary": ["Analysis results"],
-  "debt_analysis_prompt": "Manual GPT prompt",
-  "facility_list": "Extracted facilities"
-}
-```
-
-#### 2. File Download Endpoint
-
-**`/download_10q/{ticker}`**
-- **Method**: GET
-- **Parameters**:
-  - `ticker`: Stock ticker for SEC filing
-  - `company_name`: Optional company name for filename
-- **Response**: HTML file download with proper headers
-
-#### 3. Data Processing Functions
-
-**`parse_execs(exec_str)`**
-- Parses executive information from LLM output
-- Extracts CFO, Treasurer, and CEO names
-- Handles various output formats and edge cases
-- Returns structured executive data
-
-**Error Handling Strategy**
-- Individual component error isolation
-- Graceful degradation for partial failures
-- Detailed error messages for debugging
-- Fallback strategies for critical components
-
-### Technical Details
-
-#### Environment Variables
-- All component-specific environment variables
-- CORS configuration for frontend integration
-- User agent configuration for SEC compliance
-
-#### Dependencies
-- **FastAPI**: Modern web framework for API development
-- **CORSMiddleware**: Cross-origin resource sharing
-- **asyncio**: Asynchronous execution support
-- **All screening components**: Modular integration
-
-#### CORS Configuration
-- **allow_origins**: ["*"] for development flexibility
-- **allow_credentials**: True for authentication support
-- **allow_methods**: ["*"] for full HTTP method support
-- **allow_headers**: ["*"] for custom header support
-
-#### Error Handling
-- Component-level error isolation
-- Structured error responses
-- Debug logging for troubleshooting
-- Graceful degradation strategies
 
 ## LLM Client Pipeline
 
@@ -745,3 +921,142 @@ CIK String Output
 - File loading error handling
 - Missing ticker graceful degradation
 - Empty string returns for failed lookups
+
+## Setup and Installation
+
+### Prerequisites
+- Python 3.8+
+- Node.js (for frontend development)
+- Required API keys (see Environment Variables)
+
+### Environment Variables
+```bash
+# Required API Keys
+SERPAPI_API_KEY=your_serpapi_key
+OPENAI_API_KEY=your_openai_key
+OPENROUTER_API_KEY=your_openrouter_key  # Optional
+
+# Model Configuration
+MODEL_NAME=gpt-4.1-nano
+10Q_MODEL_NAME=gpt-4o-mini
+SECONDPASS_MODEL=gpt-4o-mini
+
+# Client Selection
+USE_OPENROUTER=false  # Set to true for OpenRouter
+```
+
+### Installation Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd ib-company-screener
+   ```
+
+2. **Install backend dependencies**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API keys
+   ```
+
+4. **Start the backend server**
+   ```bash
+   python main.py
+   ```
+
+5. **Open the frontend**
+   - Open `frontend.html` in your browser
+   - Or serve it using a local web server
+
+### Usage
+
+1. **Enter company information**
+   - Company name (e.g., "Apple Inc.")
+   - Ticker symbol (e.g., "AAPL")
+
+2. **Select desired functions**
+   - Check/uncheck the functions you want to run
+   - All functions are enabled by default
+
+3. **Submit and wait for results**
+   - Results will be displayed in organized sections
+   - Download links for SEC filings
+   - Copyable prompts for debt analysis
+
+### File Structure
+```
+ib-company-screener/
+├── frontend.html          # Main web interface
+├── script.js             # Frontend JavaScript logic
+├── styles.css            # Frontend styling
+├── backend/
+│   ├── main.py           # FastAPI server
+│   ├── exec_scraper.py   # Executive extraction
+│   ├── email_scraper.py  # Email construction
+│   ├── get_industry.py   # Industry classification
+│   ├── getcreditrating.py # Credit rating extraction
+│   ├── promptand10q.py   # SEC filing analysis
+│   ├── intelligent_treasurer_system.py # Advanced treasurer detection
+│   ├── llm_client.py     # LLM client configuration
+│   ├── ticker_utils.py   # Ticker-CIK mapping
+│   └── requirements.txt   # Python dependencies
+├── start.sh              # Startup script
+├── setup.sh              # Setup script
+└── README.md             # This file
+```
+
+## Technical Architecture
+
+### Frontend-Backend Communication
+- **Protocol**: HTTP REST API
+- **CORS**: Enabled for cross-origin requests
+- **Data Format**: JSON
+- **Error Handling**: Structured error responses
+
+### Data Flow
+1. **User Input** → Frontend form submission
+2. **API Request** → Backend endpoint processing
+3. **Component Execution** → Parallel async processing
+4. **Data Aggregation** → Structured JSON response
+5. **Result Display** → Frontend rendering
+
+### Error Handling Strategy
+- **Component Isolation**: Individual component failures don't affect others
+- **Graceful Degradation**: Partial results when some components fail
+- **User Feedback**: Clear error messages and status indicators
+- **Fallback Strategies**: Multiple approaches for critical data
+
+### Performance Optimizations
+- **Async Processing**: Parallel execution of independent components
+- **Caching**: Local ticker database for fast lookups
+- **Timeout Handling**: Configurable timeouts for external APIs
+- **Resource Management**: Efficient memory usage and cleanup
+
+## Contributing
+
+### Development Guidelines
+- Follow existing code structure and patterns
+- Add comprehensive error handling
+- Include appropriate logging and debugging
+- Test with multiple company types and scenarios
+- Update documentation for new features
+
+### Testing Strategy
+- Test with various company sizes and industries
+- Verify API key configurations
+- Test error scenarios and edge cases
+- Validate frontend-backend integration
+- Check SEC filing accessibility
+
+### Deployment Considerations
+- Environment variable management
+- API key security
+- CORS configuration for production
+- Error monitoring and logging
+- Performance optimization for high usage
