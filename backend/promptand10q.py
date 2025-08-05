@@ -101,43 +101,40 @@ def generate_manual_gpt_prompt(facility_list_10q: str, facility_list_10k: str, h
     Second function: Generate a prompt for manual GPT analysis with the full HTML document.
     Returns plaintext prompt that can be used with GPT online.
     """
-    prompt = f"""I performed an initial manual pass through the company's 10-Q and 10-K filings and identified the following currently active debt facilities and notes:
+    prompt = f"""
+Your task is to extract the full debt capital stack for this company using the HTML provided. You must:
 
-These facilities I identified from the 10-Q:
-{facility_list_10q}
-
-These facilities I identified from the 10-K:
-{facility_list_10k}
-
-These lists may be incomplete or contain inaccuracies—they are only for reference.
-
-Your task is to extract the **full debt capital stack** for this company using the full HTML filings provided. You must:
-
-- Include **every facility listed above** if it is active. Ignore it if outdated or not an actual debt instrument.
-- Add **any additional active facilities** that are not listed above.
-- **Do not omit** any active:
+- Include every facility listed above if active. Ignore if outdated or not a debt instrument.
+- Add any additional **active** facilities not listed above.
+- Do **not omit** any active:
   - Term loans
   - Revolving credit facilities
-  - Senior unsecured notes (USD or foreign currency)
+  - Senior unsecured notes (USD or foreign currency) — **each one must be listed separately**
   - Working capital loans
   - Receivables purchase agreements
   - Factoring or discounting agreements
-- **Follow this strict output format** for every debt instrument:
-  $[Full Facility Amount] [Facility Type] @ [Interest Rate] mat. MM/YYYY (Lead Bank)
-    - Bullet 1
+
+- ❗️**NEVER put drawn or usage amount in the main line.**  
+  Use the full committed facility amount in the main bullet.  
+  If the full amount is not disclosed, leave it out of the main bullet and list usage in the bullets.
+
+- Follow this strict output format for every debt instrument:
+
+  $[Full Facility Amount] [Facility Type] @ [Interest Rate] mat. MM/YYYY (Lead Bank)  
+    - Bullet 1  
     - Bullet 2
 
-  - Use "Senior Unsecured Notes" as the facility type for all notes.
-  - If the full facility amount is not disclosed, do **not** include it in the main bullet; instead, mention usage or balance in bullets.
-  - If interest rate or lead bank is missing, do **not** include them in the main line; instead, state that in the bullets.
+- If the full amount, interest rate, or lead bank is not disclosed:
+  - Leave them out of the main bullet line.
+  - Include a supporting bullet stating that the info is missing.
 
-- **List all instruments from earliest to latest maturity.**
+- CRITICAL: **List all instruments from earliest to latest maturity.**
 
-- For **receivables programs or factoring agreements**, include them even if not traditional debt, but label them clearly as such.
+- For receivables or factoring agreements, include even if not traditional debt, but label them clearly.
 
-- If instruments are **hedged, swapped, partially prepaid, or restructured**, explain that in bullets.
+- If instruments are hedged, swapped, partially prepaid, or restructured, explain in bullets.
 
-- Do not summarize or group. **Include each active instrument separately with full details.**
+- Do not group or summarize. **List each active instrument individually with full details.**
 
 Begin now using the full HTML filings.
 """
@@ -203,7 +200,8 @@ def run_prompt_generation_pipeline(ticker: str, debug=False):
         return None, None
     
     # Step 2: Extract facility names
-    facility_list = extract_facility_names_from_10q(soup, text_content, debug=debug)
+    #facility_list = extract_facility_names_from_10q(soup, text_content, debug=debug)
+    facility_list = ""
     
     # Step 3: Generate manual GPT prompt
     manual_prompt = generate_manual_gpt_prompt(facility_list, "", html_content) # Pass empty string for 10k_facility_list
@@ -317,7 +315,8 @@ def run_10k_prompt_generation_pipeline(ticker: str, debug=False):
         return None, None
     
     # Step 2: Extract facility names
-    facility_list = extract_facility_names_from_10k(soup, text_content, debug=debug)
+    #facility_list = extract_facility_names_from_10k(soup, text_content, debug=debug)
+    facility_list = ""
     
     # Step 3: Generate manual GPT prompt
     manual_prompt = generate_manual_gpt_prompt("", facility_list, html_content) # Pass empty string for 10q_facility_list
