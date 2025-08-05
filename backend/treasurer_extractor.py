@@ -68,6 +68,17 @@ class SimplifiedTreasurerDetector:
             # With middle initials - capture first and last, skip middle
             r'^([A-Z][a-z]+)\s+[A-Z]\.?\s+([A-Z][a-z]+)\s*[-–—][^.]*?treasurer',  # "Justin S. Forsberg - VP/Treasurer" → "Justin Forsberg"
             
+            # Enhanced patterns for current roles
+            r'([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:current|serves\s+as)\s+(?:assistant\s+)?treasurer',  # "John Smith current treasurer"
+            r'(?:assistant\s+)?treasurer\s+(?:since|from)\s+\d{4}[^.]*?([A-Z][a-z]+\s+[A-Z][a-z]+)',  # "Treasurer since 2020 John Smith"
+            r'([A-Z][a-z]+\s+[A-Z][a-z]+)\s+appointed\s+(?:assistant\s+)?treasurer',  # "John Smith appointed treasurer"
+            
+            # NEW: Better patterns for complete names in SEC filings
+            r'([A-Z][a-z]+\s+[A-Z][a-z]+)[^.]{0,50}(?:vice\s+president\s+and\s+)?treasurer',  # "Sarah Rana Vice President and Treasurer"
+            r'(?:vice\s+president\s+and\s+)?treasurer[^.]{0,50}([A-Z][a-z]+\s+[A-Z][a-z]+)',  # "Treasurer Sarah Rana"
+            r'([A-Z][a-z]+\s+[A-Z][a-z]+)[^.]{0,100}title[^.]{0,50}treasurer',  # "Sarah Rana Title: Vice President and Treasurer"
+            r'title[^.]{0,50}treasurer[^.]{0,50}([A-Z][a-z]+\s+[A-Z][a-z]+)',  # "Title: Vice President and Treasurer Sarah Rana"
+            
             # Primary patterns - simple names at start of text
             r'^([A-Z][a-z]+\s+[A-Z][a-z]+)\s*[-–—]?\s*(?:assistant\s+)?treasurer',  # "John Smith - Treasurer"
             r'^([A-Z][a-z]+\s+[A-Z][a-z]+)[^.]{0,40}(?:serves?\s+as\s+)?(?:assistant\s+)?treasurer',  # "John Smith serves as Treasurer"

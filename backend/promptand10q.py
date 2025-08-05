@@ -17,24 +17,60 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 MODEL_NAME = os.getenv("10Q_MODEL_NAME", "gpt-4o-mini")
 llm_client = OpenAI(api_key=OPENAI_API_KEY)
 
+def deduplicate_facilities(facility_list: str) -> str:
+    """
+    Remove duplicates from facility list and clean up formatting.
+    """
+    if not facility_list or facility_list.startswith("Error:"):
+        return facility_list
+    
+    # Split into lines and clean up
+    lines = facility_list.strip().split('\n')
+    unique_facilities = []
+    seen = set()
+    
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+            
+        # Remove numbering if present (e.g., "1. ", "2. ", etc.)
+        if line and line[0].isdigit() and '. ' in line:
+            line = line.split('. ', 1)[1]
+        
+        # Normalize the line for comparison
+        normalized = line.lower().strip()
+        
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            unique_facilities.append(line)
+    
+    return '\n'.join(unique_facilities)
+
 def extract_facility_names_from_10q(soup, text_content, debug=False):
     """
     First pass: Extract all currently active debt facility names from the 10-Q document.
     Returns a list of facility names/types/currencies/maturities.
     """
     prompt = f"""
-You are reviewing the latest 10-Q for a company. Your task is to scan the full document (text and tables) and list every currently active debt facility or note mentioned.
+You are reviewing the latest 10-Q for a company. Your task is to scan the full document (text and tables) and list every UNIQUE currently active debt facility or note mentioned.
 
-For each facility or note, extract the following:
+For each UNIQUE facility or note, extract the following:
 - Name or label (e.g., 2024 Term Loan, Revolving Credit Facility, Senior Notes)
 - Currency
 - Facility type (e.g., Term Loan, Revolver, Note, etc.)
 
-You do NOT need to format it precisely. Just list every unique facility that is currently active, regardless of how much detail is available.
+CRITICAL INSTRUCTIONS:
+- List each UNIQUE facility only ONCE, even if it appears multiple times in the document
+- Do not duplicate the same facility with different numbering
+- Focus on the actual facility name/type, not individual mentions
+- For notes, group by maturity year and currency (e.g., "2025 Senior Unsecured Notes (USD)" not individual note numbers)
+- For revolving facilities, list once per facility type
+- For term loans, list once per facility
 
-Do not summarize. Do not skip any facility mentioned in a table or section like "Note 5 – Credit Facilities".
+Format each facility as: [Facility Name] ([Currency], [Facility Type])
 
-List one facility per line.
+List one UNIQUE facility per line. Do not number them.
 
 DOCUMENT TEXT:
 {text_content}
@@ -44,7 +80,7 @@ DOCUMENT TEXT:
         response = llm_client.chat.completions.create(
             model=MODEL_NAME,
             messages=[
-                {"role": "system", "content": "You are a financial document analyzer. Extract all currently active debt facilities and notes from 10-Q filings. Be comprehensive and list every facility mentioned."},
+                {"role": "system", "content": "You are a financial document analyzer. Extract UNIQUE currently active debt facilities and notes from 10-Q filings. List each facility only once, avoiding duplicates."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1  # Low temperature for consistent extraction
@@ -52,38 +88,60 @@ DOCUMENT TEXT:
         
         facility_list = response.choices[0].message.content.strip()
         
+        # Apply deduplication
+        facility_list = deduplicate_facilities(facility_list)
+        
         return facility_list
         
     except Exception as e:
         return f"Error extracting facilities: {str(e)}"
 
-def generate_manual_gpt_prompt(facility_list: str, html_content: str):
+def generate_manual_gpt_prompt(facility_list_10q: str, facility_list_10k: str, html_content: str):
     """
     Second function: Generate a prompt for manual GPT analysis with the full HTML document.
     Returns plaintext prompt that can be used with GPT online.
     """
-    prompt = f"""I performed an initial manual pass through the company's 10-Q and identified the following currently active debt facilities and notes:
+    prompt = f"""I performed an initial manual pass through the company's 10-Q and 10-K filings and identified the following currently active debt facilities and notes:
 
-{facility_list}
+These facilities I identified from the 10-Q:
+{facility_list_10q}
 
-This list may not be complete and may have inaccurate information, its just for reference.
+These facilities I identified from the 10-K:
+{facility_list_10k}
 
-Your task is to extract the full debt capital stack for this company using the HTML provided. You must:
+These lists may be incomplete or contain inaccuracies—they are only for reference.
 
-- Include every facility listed above if they are active, ignore them if they aren't actual debt facilities or they are outdated
-- Add any facilities you find that were not in the list
-- Do not omit any active term loans, revolvers, or notes
-- Follow this strict format:
+Your task is to extract the **full debt capital stack** for this company using the full HTML filings provided. You must:
+
+- Include **every facility listed above** if it is active. Ignore it if outdated or not an actual debt instrument.
+- Add **any additional active facilities** that are not listed above.
+- **Do not omit** any active:
+  - Term loans
+  - Revolving credit facilities
+  - Senior unsecured notes (USD or foreign currency)
+  - Working capital loans
+  - Receivables purchase agreements
+  - Factoring or discounting agreements
+- **Follow this strict output format** for every debt instrument:
   $[Full Facility Amount] [Facility Type] @ [Interest Rate] mat. MM/YYYY (Lead Bank)
     - Bullet 1
     - Bullet 2
 
-If any detail is missing, dont include the info in the main bullet and in the supporting bullets, tell me that the info is missing.
+  - Use "Senior Unsecured Notes" as the facility type for all notes.
+  - If the full facility amount is not disclosed, do **not** include it in the main bullet; instead, mention usage or balance in bullets.
+  - If interest rate or lead bank is missing, do **not** include them in the main line; instead, state that in the bullets.
 
-CRITICAL: LIST THE FACILITIES FROM EARLIEST TO LATEST MATURITY. Do not summarize. Do not omit any bullet points.
-CRITICAL: FULL FACILITY AMOUNTS SHOULD BE LISTED IN THE MAIN BULLET. IF YOU CANNOT FIND THE FULL AMOUNT, DO NOT INCLUDE IT IN THE MAIN BULLET (TELL ME ITS MISSING), AND TELL ME USAGE IN THE SUPPORTING BULLETS.
-Begin now using the full HTML document.
+- **List all instruments from earliest to latest maturity.**
+
+- For **receivables programs or factoring agreements**, include them even if not traditional debt, but label them clearly as such.
+
+- If instruments are **hedged, swapped, partially prepaid, or restructured**, explain that in bullets.
+
+- Do not summarize or group. **Include each active instrument separately with full details.**
+
+Begin now using the full HTML filings.
 """
+
 
     return prompt
 
@@ -148,7 +206,121 @@ def run_prompt_generation_pipeline(ticker: str, debug=False):
     facility_list = extract_facility_names_from_10q(soup, text_content, debug=debug)
     
     # Step 3: Generate manual GPT prompt
-    manual_prompt = generate_manual_gpt_prompt(facility_list, html_content)
+    manual_prompt = generate_manual_gpt_prompt(facility_list, "", html_content) # Pass empty string for 10k_facility_list
+    
+    return facility_list, manual_prompt
+
+def get_latest_10k_link_for_ticker(ticker: str) -> str:
+    """
+    Get the latest 10-K filing URL for a given ticker.
+    """
+    cik = get_cik_for_ticker(ticker)
+    if not cik:
+        return ""
+    
+    try:
+        submissions = edgar.get_submissions(cik=cik)
+        recent_filings = submissions["filings"]["recent"]
+        
+        for i, form in enumerate(recent_filings["form"]):
+            if form == "10-K":
+                accession = recent_filings["accessionNumber"][i]
+                primary_doc = recent_filings["primaryDocument"][i]
+                filing_url = f"https://www.sec.gov/Archives/edgar/data/{int(cik):010d}/{accession.replace('-', '')}/{primary_doc}"
+                return filing_url
+        
+        return ""
+        
+    except Exception as e:
+        return ""
+
+def download_and_parse_10k(ticker: str):
+    """
+    Download and parse the latest 10-K document for a given ticker.
+    """
+    link = get_latest_10k_link_for_ticker(ticker)
+    
+    if not link:
+        return None, None, None
+    
+    try:
+        response = requests.get(link, headers={"User-Agent": "Company Screener Tool contact@companyscreenertool.com"})
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.content, "html.parser")
+        text_content = soup.get_text(separator="\n", strip=True)
+        html_content = response.text
+        
+        return soup, text_content, html_content
+        
+    except Exception as e:
+        return None, None, None
+
+def extract_facility_names_from_10k(soup, text_content, debug=False):
+    """
+    First pass: Extract all currently active debt facility names from the 10-K document.
+    Returns a list of facility names/types/currencies/maturities.
+    """
+    prompt = f"""
+You are reviewing the latest 10-K for a company. Your task is to scan the full document (text and tables) and list every UNIQUE currently active debt facility or note mentioned.
+
+For each UNIQUE facility or note, extract the following:
+- Name or label (e.g., 2024 Term Loan, Revolving Credit Facility, Senior Notes)
+- Currency
+- Facility type (e.g., Term Loan, Revolver, Note, etc.)
+
+CRITICAL INSTRUCTIONS:
+- List each UNIQUE facility only ONCE, even if it appears multiple times in the document
+- Do not duplicate the same facility with different numbering
+- Focus on the actual facility name/type, not individual mentions
+- For notes, group by maturity year and currency (e.g., "2025 Senior Unsecured Notes (USD)" not individual note numbers)
+- For revolving facilities, list once per facility type
+- For term loans, list once per facility
+
+Format each facility as: [Facility Name] ([Currency], [Facility Type])
+
+List one UNIQUE facility per line. Do not number them.
+
+DOCUMENT TEXT:
+{text_content}
+"""
+
+    try:
+        response = llm_client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {"role": "system", "content": "You are a financial document analyzer. Extract UNIQUE currently active debt facilities and notes from 10-K filings. List each facility only once, avoiding duplicates."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.1  # Low temperature for consistent extraction
+        )
+        
+        facility_list = response.choices[0].message.content.strip()
+        
+        # Apply deduplication
+        facility_list = deduplicate_facilities(facility_list)
+        
+        return facility_list
+        
+    except Exception as e:
+        return f"Error extracting facilities: {str(e)}"
+
+def run_10k_prompt_generation_pipeline(ticker: str, debug=False):
+    """
+    Run the complete pipeline to generate facility list and manual GPT prompt for 10-K.
+    Returns the facility list and the manual GPT prompt.
+    """
+    # Step 1: Download and parse
+    soup, text_content, html_content = download_and_parse_10k(ticker)
+    
+    if soup is None:
+        return None, None
+    
+    # Step 2: Extract facility names
+    facility_list = extract_facility_names_from_10k(soup, text_content, debug=debug)
+    
+    # Step 3: Generate manual GPT prompt
+    manual_prompt = generate_manual_gpt_prompt("", facility_list, html_content) # Pass empty string for 10q_facility_list
     
     return facility_list, manual_prompt
 

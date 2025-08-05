@@ -3,13 +3,11 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from ceo_cfo_extractor import get_ceo_cfo_executives, get_execs_via_serp
-from treasurer_extractor import get_treasurer_info
+from improved_treasurer_extractor import get_improved_treasurer_info
 from get_industry import get_industry_and_blurb, openai_client
-from promptand10q import get_latest_10q_link_for_ticker
+from promptand10q import get_latest_10q_link_for_ticker, get_latest_10k_link_for_ticker
 from email_scraper import scrape_emails
-from promptand10q import run_prompt_generation_pipeline
-# New intelligent systems
-from intelligent_email_scraper import intelligent_scrape_emails
+from promptand10q import run_prompt_generation_pipeline, run_10k_prompt_generation_pipeline
 import asyncio
 import os
 
@@ -45,10 +43,24 @@ async def get_intelligent_executives(company_name: str):
         ceo = ceo_cfo_result.get("ceo")
         cfo = ceo_cfo_result.get("cfo")
         
-        # Get treasurer using the dedicated extractor
-        treasurer_result = await get_treasurer_info(company_name)
+        # Get treasurer using the improved extractor
+        treasurer_result = await get_improved_treasurer_info(company_name)
         treasurer = treasurer_result.get("treasurer", "same")
-        treasurer_metadata = treasurer_result.get("treasurer_metadata", {})
+        
+        # Extract candidate data from the improved system
+        candidate_data = []
+        if treasurer_result.get("candidates"):
+            for candidate in treasurer_result["candidates"]:
+                candidate_data.append({
+                    'name': candidate['name'],
+                    'linkedin_url': candidate['url'] if candidate['url'] != 'NO_URL_FOUND' else None,
+                    'score': candidate.get('score', 0)
+                })
+        
+        # Add candidates to metadata
+        treasurer_metadata = {
+            'candidates': candidate_data
+        }
         
         return {
             "cfo": cfo,
@@ -69,7 +81,8 @@ async def get_intelligent_executives(company_name: str):
                 "confidence": "legacy",
                 "status": "fallback",
                 "email_strategy": "use_cfo_only",
-                "recommendation": "Used legacy system due to error"
+                "recommendation": "Used legacy system due to error",
+                "candidates": []
             }
         }
 
@@ -84,6 +97,7 @@ async def company_info(
     include_industry: bool = Query(True, description="Include industry information"),
     include_industry_blurb: bool = Query(True, description="Include industry blurb"),
     include_10q_link: bool = Query(True, description="Include latest 10-Q link"),
+    include_10k_link: bool = Query(False, description="Include latest 10-K link"),
     include_debt_liquidity: bool = Query(True, description="Include debt and liquidity summary")
 ):
     result = {}
@@ -104,29 +118,17 @@ async def company_info(
                 exec_data = await get_intelligent_executives(company_name)
                 cfo = exec_data.get("cfo")
                 ceo = exec_data.get("ceo")
+                treasurer = exec_data.get("treasurer", "same")
             else:
                 cfo = result.get("executives", {}).get("cfo")
                 ceo = result.get("executives", {}).get("ceo")
+                treasurer = result.get("executives", {}).get("treasurer", "same")
             
-            # Use intelligent email scraper (treasurer is determined automatically)
-            email_info = await intelligent_scrape_emails(company_name, cfo, "", ceo)
+            # Use simple legacy email scraper
+            email_info = scrape_emails(company_name, cfo, treasurer, ceo)
             result["emails"] = email_info
         except Exception as e:
-            # Fallback to legacy email system
-            try:
-                if not include_executives:
-                    execs_str = await get_execs_via_serp(company_name)
-                    cfo, treasurer, ceo = parse_execs(execs_str)
-                else:
-                    cfo = result.get("executives", {}).get("cfo")
-                    treasurer = result.get("executives", {}).get("treasurer")
-                    ceo = result.get("executives", {}).get("ceo")
-                
-                email_info = scrape_emails(company_name, cfo, treasurer, ceo)
-                email_info["fallback_reason"] = f"Intelligent system failed: {str(e)}"
-                result["emails"] = email_info
-            except Exception as e2:
-                result["emails"] = {"error": f"Failed to get emails: {str(e2)}"}
+            result["emails"] = {"error": f"Failed to get emails: {str(e)}"}
     
     # Get industry and blurb if requested
     if include_industry or include_industry_blurb:
@@ -173,6 +175,17 @@ async def company_info(
             print(f"❌ Error getting 10-Q link: {str(e)}")
             result["latest_10q_link"] = f"Error: {str(e)}"
     
+    # Get 10-K link if requested
+    if include_10k_link:
+        try:
+            print(f"🔍 Getting 10-K link for ticker: {ticker}")
+            tenk_link = get_latest_10k_link_for_ticker(ticker)
+            print(f"✅ 10-K link: {tenk_link}")
+            result["latest_10k_link"] = tenk_link
+        except Exception as e:
+            print(f"❌ Error getting 10-K link: {str(e)}")
+            result["latest_10k_link"] = f"Error: {str(e)}"
+    
     # Get debt and liquidity summary if requested
     if include_debt_liquidity:
         try:
@@ -181,28 +194,55 @@ async def company_info(
             tenq_link = get_latest_10q_link_for_ticker(ticker)
             print(f"✅ 10-Q link for debt analysis: {tenq_link}")
             
-            # Store the 10-Q link in the result so the frontend can use it
+            # Get 10-K link for debt analysis (even if 10-K link checkbox is not checked)
+            print(f"🔍 Getting 10-K link for debt analysis ticker: {ticker}")
+            tenk_link = get_latest_10k_link_for_ticker(ticker)
+            print(f"✅ 10-K link for debt analysis: {tenk_link}")
+            
+            # Store both links in the result so the frontend can use them
             result["latest_10q_link"] = tenq_link
+            result["latest_10k_link"] = tenk_link
             
             # Generate the debt analysis prompt
             print(f"🔍 Generating debt analysis prompt for ticker: {ticker}")
-            facility_list, manual_prompt = run_prompt_generation_pipeline(ticker, debug=False)
+            
+            # Extract facilities from both 10-Q and 10-K
+            from promptand10q import run_prompt_generation_pipeline, run_10k_prompt_generation_pipeline, generate_manual_gpt_prompt, download_and_parse_10q, download_and_parse_10k, extract_facility_names_from_10q, extract_facility_names_from_10k
+            
+            # Get 10-Q facilities
+            tenq_soup, tenq_text, tenq_html = download_and_parse_10q(ticker)
+            tenq_facilities = ""
+            if tenq_soup:
+                tenq_facilities = extract_facility_names_from_10q(tenq_soup, tenq_text, debug=False)
+            
+            # Get 10-K facilities
+            tenk_soup, tenk_text, tenk_html = download_and_parse_10k(ticker)
+            tenk_facilities = ""
+            if tenk_soup:
+                tenk_facilities = extract_facility_names_from_10k(tenk_soup, tenk_text, debug=False)
+            
+            # Generate manual prompt with both facility lists
+            manual_prompt = generate_manual_gpt_prompt(tenq_facilities, tenk_facilities, tenq_html if tenq_html else "")
             
             if manual_prompt:
                 result["debt_liquidity_summary"] = ["PDF file available for download"]
                 result["debt_analysis_prompt"] = manual_prompt
-                result["facility_list"] = facility_list
+                result["facility_list_10q"] = tenq_facilities
+                result["facility_list_10k"] = tenk_facilities
             else:
                 result["debt_liquidity_summary"] = ["PDF file available for download"]
                 result["debt_analysis_prompt"] = f"Error: Failed to generate prompt for {ticker}"
-                result["facility_list"] = f"Error: Failed to extract facilities for {ticker}"
+                result["facility_list_10q"] = f"Error: Failed to extract facilities for {ticker}"
+                result["facility_list_10k"] = f"Error: Failed to extract facilities for {ticker}"
                 
         except Exception as e:
             print(f"❌ Error in debt analysis: {str(e)}")
             result["debt_liquidity_summary"] = [f"Error: {str(e)}"]
             result["latest_10q_link"] = f"Error: {str(e)}"
+            result["latest_10k_link"] = f"Error: {str(e)}"
             result["debt_analysis_prompt"] = f"Error: {str(e)}"
-            result["facility_list"] = f"Error: {str(e)}"
+            result["facility_list_10q"] = f"Error: {str(e)}"
+            result["facility_list_10k"] = f"Error: {str(e)}"
     
     return result
 
@@ -251,3 +291,49 @@ async def download_10q(ticker: str, company_name: str = ""):
         
     except Exception as e:
         return {"error": f"Failed to download 10-Q: {str(e)}"}
+
+@app.get("/download_10k/{ticker}")
+async def download_10k(ticker: str, company_name: str = ""):
+    """
+    Download 10-K file for a given ticker.
+    """
+    try:
+        # Get the 10-K link
+        tenk_link = get_latest_10k_link_for_ticker(ticker)
+        if not tenk_link or tenk_link.startswith("Error:"):
+            return {"error": "No 10-K filing found"}
+        
+        # Fetch the file content
+        import requests
+        headers = {
+            "User-Agent": "Company Screener Tool contact@companyscreenertool.com"
+        }
+        response = requests.get(tenk_link, headers=headers)
+        response.raise_for_status()
+        
+        # Create a better filename with company name
+        if company_name:
+            # Clean company name for filename (remove special chars, replace spaces with underscores)
+            clean_company_name = company_name.replace(" ", "_").replace(",", "").replace(".", "").replace("&", "and")
+            filename = f"{clean_company_name}_latest_10K.html"
+        else:
+            # Fallback to ticker-based filename
+            filename = f"{ticker}_latest_10K.html"
+        
+        print(f"🔍 Download filename: {filename}")
+        print(f"🔍 Company name: {company_name}")
+        print(f"🔍 Ticker: {ticker}")
+        
+        # Return the file content
+        from fastapi.responses import Response
+        return Response(
+            content=response.content,
+            media_type="text/html",
+            headers={
+                "Content-Disposition": f"attachment; filename=\"{filename}\"",
+                "Content-Type": "text/html"
+            }
+        )
+        
+    except Exception as e:
+        return {"error": f"Failed to download 10-K: {str(e)}"}
