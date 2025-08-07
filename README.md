@@ -925,54 +925,191 @@ CIK String Output
 ## Setup and Installation
 
 ### Prerequisites
-- Python 3.8+
-- Node.js (for frontend development)
-- Required API keys (see Environment Variables)
+- **Python 3.8+** (required for backend)
+- **Git** (for cloning the repository)
+- **Required API keys** (see Environment Variables section below)
 
 ### Environment Variables
 ```bash
 # Required API Keys
 SERPAPI_API_KEY=your_serpapi_key
 OPENAI_API_KEY=your_openai_key
+SEC_API_KEY=your_sec_api_key
 OPENROUTER_API_KEY=your_openrouter_key  # Optional
+OPENFIGI_API_KEY=your_openfigi_key  # Optional
 
 # Model Configuration
 MODEL_NAME=gpt-4.1-nano
-10Q_MODEL_NAME=gpt-4o-mini
-SECONDPASS_MODEL=gpt-4o-mini
+10Q_MODEL_NAME=gpt-4.1-nano  # Change to gpt-4-turbo for most accuracy, but more expensive
+SECONDPASS_MODEL=gpt-4.1-nano
 
 # Client Selection
 USE_OPENROUTER=false  # Set to true for OpenRouter
+
+# Model Choices (for reference):
+# gpt-4.1-nano (cheap)
+# gpt-4o-mini (cheap)
+# gpt-4o (moderate)
+# gpt-4-turbo (expensive but better accuracy)
+# Pricing: https://platform.openai.com/docs/models/compare
 ```
 
-### Installation Steps
+### Quick Setup (Recommended)
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd ib-company-screener
-   ```
+#### 🍎 macOS / Linux
+```bash
+# 1. Clone the repository
+git clone <repository-url>
+cd ib-company-screener
 
-2. **Install backend dependencies**
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   ```
+# 2. Run the automated setup script
+chmod +x setup.sh
+./setup.sh
 
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your API keys
-   ```
+# 3. Configure environment variables
+cp .env.example .env
+# Edit .env with your API keys using your preferred editor
+nano .env  # or: code .env, vim .env, etc.
 
-4. **Start the backend server**
-   ```bash
-   python main.py
-   ```
+# 4. Start the application
+chmod +x start.sh
+./start.sh
+```
 
-5. **Open the frontend**
-   - Open `frontend.html` in your browser
-   - Or serve it using a local web server
+#### 🪟 Windows
+```bash
+# 1. Clone the repository
+git clone <repository-url>
+cd ib-company-screener
+
+# 2. Run the automated setup script
+# Open PowerShell as Administrator and run:
+powershell -ExecutionPolicy Bypass -File setup.ps1
+
+# 3. Configure environment variables
+copy .env.example .env
+# Edit .env with your API keys using your preferred editor
+notepad .env  # or: code .env, etc.
+
+# 4. Start the application
+powershell -ExecutionPolicy Bypass -File start.ps1
+```
+
+### Manual Setup (Alternative)
+
+#### 🍎 macOS / Linux
+```bash
+# 1. Clone the repository
+git clone <repository-url>
+cd ib-company-screener
+
+# 2. Create and activate virtual environment
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Install Playwright browsers
+playwright install
+
+# 5. Configure environment variables
+cd ..
+cp .env.example .env
+# Edit .env with your API keys
+
+# 6. Start backend server
+cd backend
+source venv/bin/activate
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# 7. Start frontend server (in new terminal)
+cd ..
+python -m http.server 8080
+```
+
+#### 🪟 Windows
+```bash
+# 1. Clone the repository
+git clone <repository-url>
+cd ib-company-screener
+
+# 2. Create and activate virtual environment
+cd backend
+python -m venv venv
+venv\Scripts\activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Install Playwright browsers
+playwright install
+
+# 5. Configure environment variables
+cd ..
+copy .env.example .env
+# Edit .env with your API keys
+
+# 6. Start backend server
+cd backend
+venv\Scripts\activate
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# 7. Start frontend server (in new terminal)
+cd ..
+python -m http.server 8080
+```
+
+### Accessing the Application
+
+After successful setup, you can access:
+
+- **🌐 Frontend Interface**: http://localhost:8080/frontend.html
+- **🔧 Backend API**: http://localhost:8000
+- **📚 API Documentation**: http://localhost:8000/docs
+
+### Troubleshooting
+
+#### Common Issues
+
+**Port Already in Use**
+```bash
+# Kill processes using ports 8000 and 8080
+lsof -ti:8000 | xargs kill -9  # macOS/Linux
+lsof -ti:8080 | xargs kill -9  # macOS/Linux
+
+# Windows (PowerShell)
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+```
+
+**Python Not Found**
+```bash
+# Ensure Python 3.8+ is installed
+python3 --version  # macOS/Linux
+python --version   # Windows
+```
+
+**Virtual Environment Issues**
+```bash
+# Recreate virtual environment
+rm -rf backend/venv  # macOS/Linux
+rmdir /s backend\venv  # Windows
+# Then run setup script again
+```
+
+**API Key Issues**
+- Ensure all required API keys are set in `.env`
+- Verify API keys are valid and have sufficient credits
+- Check API service status for external services
+
+#### Getting Help
+
+1. **Check the logs** in your terminal for error messages
+2. **Verify API keys** are correctly set in `.env`
+3. **Test with known companies** like "Apple Inc." (AAPL) or "Microsoft Corporation" (MSFT)
+4. **Check network connectivity** for external API calls
 
 ### Usage
 
