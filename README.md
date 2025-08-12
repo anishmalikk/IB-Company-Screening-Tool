@@ -2,6 +2,7 @@
 A comprehensive automated investment banking company screening platform that leverages advanced AI, SEC filings, and public data sources to provide detailed financial and executive intelligence.
 
 ## Frontend Interface
+<img width="2000" height="1085" alt="screenerUI" src="https://github.com/user-attachments/assets/d23ad4a1-7821-4258-8c61-77f71b837626" />
 
 The platform provides a modern web interface (`frontend.html`) with the following features:
 
