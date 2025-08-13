@@ -7,6 +7,7 @@ function Cleanup {
     exit
 }
 
+# Register cleanup on script exit
 Register-EngineEvent PowerShell.Exiting -Action { Cleanup }
 
 Write-Host "Cleaning up existing processes..." -ForegroundColor Yellow
@@ -26,16 +27,25 @@ foreach ($port in $ports) {
 
 Start-Sleep -Seconds 2
 
+# Check if virtual environment exists
+if (-not (Test-Path "backend\venv")) {
+    Write-Host "Virtual environment not found. Please run setup.ps1 first!" -ForegroundColor Red
+    exit 1
+}
+
 Write-Host "Starting backend server..." -ForegroundColor Yellow
 Set-Location backend
 & .\venv\Scripts\Activate.ps1
-Start-Process -FilePath python -ArgumentList "-m", "uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8000" -WindowStyle Hidden
+
+# Start backend server
+$backendProcess = Start-Process -FilePath python -ArgumentList "-m", "uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8000" -WindowStyle Hidden -PassThru
 Set-Location ..
 
 Start-Sleep -Seconds 3
 
 Write-Host "Starting frontend server..." -ForegroundColor Yellow
-Start-Process -FilePath python -ArgumentList "-m", "http.server", "8080" -WindowStyle Hidden
+# Start frontend server
+$frontendProcess = Start-Process -FilePath python -ArgumentList "-m", "http.server", "8080" -WindowStyle Hidden -PassThru
 
 Start-Sleep -Seconds 2
 
@@ -48,6 +58,22 @@ Write-Host "API Docs: http://localhost:8000/docs" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Press Ctrl+C to stop servers" -ForegroundColor Magenta
 
-while ($true) {
-    Start-Sleep -Seconds 1
+try {
+    while ($true) {
+        Start-Sleep -Seconds 1
+        
+        # Check if processes are still running
+        if ($backendProcess.HasExited -or $frontendProcess.HasExited) {
+            Write-Host "One or more servers have stopped unexpectedly" -ForegroundColor Red
+            break
+        }
+    }
+} catch {
+    Write-Host "Stopping servers..." -ForegroundColor Yellow
+    if ($backendProcess -and -not $backendProcess.HasExited) {
+        Stop-Process -Id $backendProcess.Id -Force -ErrorAction SilentlyContinue
+    }
+    if ($frontendProcess -and -not $frontendProcess.HasExited) {
+        Stop-Process -Id $frontendProcess.Id -Force -ErrorAction SilentlyContinue
+    }
 }

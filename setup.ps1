@@ -5,13 +5,13 @@ Write-Host "Setting up AI Company Screener for Demo" -ForegroundColor Green
 try {
     $pythonVersion = python --version 2>&1
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Python is required but not installed" -ForegroundColor Red
+        Write-Host "Python 3 is required but not installed" -ForegroundColor Red
         Write-Host "Please install Python 3.8+ from https://python.org" -ForegroundColor Yellow
         exit 1
     }
     Write-Host "Python found: $pythonVersion" -ForegroundColor Green
 } catch {
-    Write-Host "Python is required but not installed" -ForegroundColor Red
+    Write-Host "Python 3 is required but not installed" -ForegroundColor Red
     Write-Host "Please install Python 3.8+ from https://python.org" -ForegroundColor Yellow
     exit 1
 }
@@ -25,14 +25,20 @@ if (-not (Test-Path "backend\venv")) {
 }
 
 # Activate virtual environment and install dependencies
-Write-Host "Installing dependencies..." -ForegroundColor Yellow
+Write-Host "Installing dependencies from requirements.txt..." -ForegroundColor Yellow
 Set-Location backend
 & ".\venv\Scripts\Activate.ps1"
 
-# Install required packages
-pip install fastapi uvicorn requests beautifulsoup4 playwright openai serpapi python-dotenv aiofiles spacy nltk
+# Upgrade pip first to avoid compatibility issues
+Write-Host "Upgrading pip..." -ForegroundColor Yellow
+python -m pip install --upgrade pip
+
+# Install all required packages from requirements.txt
+Write-Host "Installing packages from requirements.txt..." -ForegroundColor Yellow
+pip install -r requirements.txt
 
 # Install Playwright browsers
+Write-Host "Installing Playwright browsers..." -ForegroundColor Yellow
 playwright install
 
 Set-Location ..
@@ -45,8 +51,8 @@ Write-Host "2. Frontend: python -m http.server 8080" -ForegroundColor White
 Write-Host "3. Open: http://localhost:8080/frontend.html" -ForegroundColor White
 Write-Host ""
 Write-Host "Demo Checklist:" -ForegroundColor Cyan
-Write-Host "[ ] Test with 'Apple Inc.' / 'AAPL'" -ForegroundColor White
-Write-Host "[ ] Test with 'Microsoft Corporation' / 'MSFT'" -ForegroundColor White
-Write-Host "[ ] Show executive extraction" -ForegroundColor White
-Write-Host "[ ] Show industry analysis" -ForegroundColor White
-Write-Host "[ ] Show 10-Q processing" -ForegroundColor White
+Write-Host "- Test with 'Apple Inc.' / 'AAPL'" -ForegroundColor White
+Write-Host "- Test with 'Microsoft Corporation' / 'MSFT'" -ForegroundColor White
+Write-Host "- Show executive extraction" -ForegroundColor White
+Write-Host "- Show industry analysis" -ForegroundColor White
+Write-Host "- Show 10-Q processing" -ForegroundColor White
