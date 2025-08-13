@@ -30,7 +30,7 @@ sleep 2
 echo "🚀 Starting backend server..."
 cd backend
 source venv/bin/activate
-uvicorn main:app --reload &
+./venv/bin/uvicorn main:app --reload &
 BACKEND_PID=$!
 cd ..
 

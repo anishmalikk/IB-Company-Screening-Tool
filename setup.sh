@@ -17,14 +17,20 @@ if [ ! -d "backend/venv" ]; then
 fi
 
 # Activate virtual environment and install dependencies
-echo "📦 Installing dependencies..."
+echo "📦 Installing dependencies from requirements.txt..."
 cd backend
 source venv/bin/activate
 
-# Install required packages
-pip install fastapi uvicorn requests beautifulsoup4 playwright openai serpapi python-dotenv
+# Upgrade pip first to avoid compatibility issues
+echo "🔄 Upgrading pip..."
+pip install --upgrade pip
+
+# Install all required packages from requirements.txt
+echo "📦 Installing packages from requirements.txt..."
+pip install -r requirements.txt
 
 # Install Playwright browsers
+echo "🌐 Installing Playwright browsers..."
 playwright install
 
 cd ..
