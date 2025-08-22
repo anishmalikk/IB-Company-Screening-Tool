@@ -3,7 +3,8 @@ A comprehensive automated investment banking company screening platform that lev
 
 ## Frontend Interface
 <img width="2000" height="1085" alt="screenerUI" src="https://github.com/user-attachments/assets/d23ad4a1-7821-4258-8c61-77f71b837626" />
-
+▶️ [Watch the demo on YouTube](https://youtu.be/tQ7nEyVsclU)
+<br><br>
 The platform provides a modern web interface (`frontend.html`) with the following features:
 
 ### Search Interface
